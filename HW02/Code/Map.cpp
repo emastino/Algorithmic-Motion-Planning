@@ -34,11 +34,11 @@ int main()
 	// 8 integers to define the x,y positions of 4 corners of a rectangle
 	tuple<double, double, double, double, double, double, double, double> obstacles[numObs] = {
 		//
-		std::make_tuple(1.0,1.0,2.0,1.0,2.0,5.0,1.0,5.0),
-		std::make_tuple(3.0,3.0,4.0,3.0,4.0,12.0,3.0,12.0),
-		std::make_tuple(3.0, 12.0, 12.0, 12.0, 12.0, 13.0, 3.0, 13.0),
-		std::make_tuple(12.0, 5.0, 13.0, 5.0, 13.0, 13.0,12.0,13.0),
-		std::make_tuple(6.0,5.0,12.0,5.0,12.0,6.0,6.0,6.0),
+		std::make_tuple(1.0,1.0, 2.0,1.0, 2.0,5.0, 1.0,5.0),
+		std::make_tuple(3.0,3.0, 4.0,3.0, 4.0,12.0, 3.0,12.0),
+		std::make_tuple(3.0,12.0, 12.0,12.0, 12.0,13.0, 3.0,13.0),
+		std::make_tuple(12.0,5.0, 13.0,5.0, 13.0,13.0, 12.0,13.0),
+		std::make_tuple(6.0,5.0, 12.0,5.0, 12.0,6.0, 6.0,6.0),
 
 	};
 
