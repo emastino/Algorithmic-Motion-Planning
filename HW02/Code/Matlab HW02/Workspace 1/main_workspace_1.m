@@ -54,7 +54,7 @@ for i =1:2
     xlim(xLimits); ylim(yLimits)
     
     % Print Metrics
-    fprintf('Max Distance Traveled by Bug %d on Workspace 2: %0.3f \n', i, route(end,3))
+    fprintf('Max Distance Traveled by Bug %d on Workspace 1: %0.3f \n', i, route(end,3))
     
 end
 
