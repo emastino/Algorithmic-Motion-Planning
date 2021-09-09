@@ -44,7 +44,7 @@ for i =1:2
 
 
     % plot route
-    plot(route(:,1), route(:,2), 'o')
+%     plot(route(:,1), route(:,2), 'o')
 
     % plot start and goal
     plot(start(1), start(2), 'o', 'MarkerSize', 15,'MarkerFaceColor', 'r')
