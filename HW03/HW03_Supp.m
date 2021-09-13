@@ -35,10 +35,13 @@
 clear all;
 close all;
 
+% 
+goal = [-20; 4; 1];
+
 d = [ 0; 8; 8]; % a values
 n = 1000;
-% theta = [ linspace(-pi,pi,n); linspace(-pi/2,pi/2,n); linspace(pi/6,-pi/6,n)];
-theta =[0  ;  -2.4903 ;  -2.0391];
+theta = [ linspace(pi/2,1.9986,n); linspace(3*pi/2,1.3371,n); linspace(-pi/3,0,n)];
+% theta =[0  ;  -2.0391 ;  -2.0391];
 
 % a in coordinta frame A1
 a_ends = [-1 9;0 0;1 1];
@@ -62,7 +65,10 @@ ax.YMinorGrid = 1; % grid minor on x
 axis equal % axis equal
 ax.XLim = [-30 30]; % set limits for x
 ax.YLim = [-30 30]; % set limits for y
+hold on
 
+% plot goal
+plot(-20,4, 'o', 'MarkerSize', 12,'Color', [0.5 0.98 0.1], 'MarkerFaceColor', [0.5 0.98 0.1])
 
 for q = 1:size(theta,2)
     if q>1
@@ -86,7 +92,7 @@ for q = 1:size(theta,2)
     cj = T(:,:,1)*T(:,:,2)*T(:,:,3)*c_joint;
 
     % plot arm
-    hold on
+    
     h(1) = plot(a(1,1:2),a(2,1:2), '-o', 'Color', 'b', 'MarkerFaceColor', 'b', 'LineWidth', 1.8);
     h(2) = plot(b(1,1:2),b(2,1:2), '-o', 'Color', 'b', 'MarkerFaceColor', 'b', 'LineWidth', 1.8);
     h(3) = plot(c(1,1:2),c(2,1:2), '-o', 'Color', 'b', 'MarkerFaceColor', 'b', 'LineWidth', 1.8);
@@ -96,7 +102,7 @@ for q = 1:size(theta,2)
     h(5) = plot(bj(1),bj(2), 'o', 'Color', 'r', 'MarkerFaceColor', 'r', 'MarkerSize',7);
     h(6) = plot(cj(1),cj(2), 'o', 'Color', 'r', 'MarkerFaceColor', 'r', 'MarkerSize',7);
     
-    pause(0.05)
+    pause(0.01)
     
 end
 

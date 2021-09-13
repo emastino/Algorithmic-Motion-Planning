@@ -6,7 +6,7 @@ clc; clear all; close all;
 
 %% COnstants
 % global positions
-dg = [0; 4; 1];
+dg = [-20; 4; 1];
 x = dg(1); y = dg(2);
 
 % positions in A3 frame
