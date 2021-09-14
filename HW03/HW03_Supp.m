@@ -35,13 +35,18 @@
 clear all;
 close all;
 
-% 
-goal = [-20; 4; 1];
+% goal location
+goal = [8; 0; 1];
 
+% length from jint to joint
 d = [ 0; 8; 8]; % a values
-n = 1000;
-theta = [ linspace(pi/2,1.9986,n); linspace(3*pi/2,1.3371,n); linspace(-pi/3,0,n)];
-% theta =[0  ;  -2.0391 ;  -2.0391];
+
+% theta vectors
+speed = 2*pi/0.1;
+n = round(speed);
+theta_fin =[1.5708  -1.4455 -1.6891];
+theta = [ linspace(pi/2,theta_fin(1),n); linspace(0,theta_fin(2),n); linspace(0,theta_fin(3),n)];
+
 
 % a in coordinta frame A1
 a_ends = [-1 9;0 0;1 1];
@@ -68,7 +73,7 @@ ax.YLim = [-30 30]; % set limits for y
 hold on
 
 % plot goal
-plot(-20,4, 'o', 'MarkerSize', 12,'Color', [0.5 0.98 0.1], 'MarkerFaceColor', [0.5 0.98 0.1])
+goal= plot(goal(1),goal(2), 'o', 'MarkerSize', 12,'Color', [0.5 0.98 0.1], 'MarkerFaceColor', [0.5 0.98 0.1]);
 
 for q = 1:size(theta,2)
     if q>1
