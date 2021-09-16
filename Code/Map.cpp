@@ -5,23 +5,31 @@
 #include <algorithm>
 #include <list>
 #include <vector>
+#include <iterator>
 #include <tuple>
 #include <cmath>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
+// dense is part of the Eigen matrix library, when using it, make sure to Include
+// the path to it in the compile command:
+//
+// g++ -I "D:\Users\emast\Personal\Personal Cpp" Map.cpp -o test
+//
+#include "Eigen/Dense" //using Dense inside Eigen
 
 #include "Map.h"
 
+using namespace Eigen;
 using namespace std;
 
 int main()
 {
 
 	// map limits
-	std::tuple<float, float> xLim = std::make_tuple(0.0,13.2);
-	std::tuple<float, float> yLim = std::make_tuple(0.0,17.8);
+	std::tuple<float, float> xLim = std::make_tuple(0.0,20);
+	std::tuple<float, float> yLim = std::make_tuple(0.0,30);
 	// map start and goal
 	std::tuple<float, float> start = std::make_tuple(0.0,0.0);
 	std::tuple<float, float> goal = std::make_tuple(10.0,10.0);
@@ -33,8 +41,8 @@ int main()
 
 	string line; // whole line of text file
 	int count = 1;
-	vertex vertex;
-
+	vertex ver;
+	// read in obstacle file
 	ifstream myfile("obstacles.txt");
 	while ( getline (myfile,line) ){
 
@@ -44,26 +52,26 @@ int main()
 		polygon poly;
 
 		while (ss){
-      string s; // string seperated by comma
+      string s; // string that is seperated by comma
 
-      if (!getline( ss, s, ',' )) break;
+      if (!getline( ss, s, ',' )) break; // if no more commas, break while
 
-			if(count ==1){
+			if(count ==1){ // get x value
 				// add x value of point
-				vertex.x = std::stof(s);
+				ver.x = std::stof(s);
 				count = 2;
 			}
-			else{
+			else{ // get y value
 				// add y value of point
-				vertex.y = std::stof(s);
+				ver.y = std::stof(s);
 				// add vertex to the polygon in obstacles
-				poly.vertices.push_back(vertex);
+				poly.vertices.push_back(ver);
 				count =1;
 			}
 
 
     }
-		obstacles.push_back(poly);
+		obstacles.push_back(poly); // push the polygon into obstacles vector
 	}
 	myfile.close();
 
@@ -80,7 +88,7 @@ int main()
 // }
 
 // // Debugging
-// test out polygon struct funstionality
+// test out polygon struct functionality
 // polygon triangle;
 // for(int i = 0; i <3; i++){
 // 	pos p;
@@ -95,10 +103,12 @@ int main()
 
 
 
-	Map mapa(xLim, yLim, start, goal);
+	map mapa(xLim, yLim, start, goal, obstacles);
 
-
-
+	vertex v;
+	v.x = 1.1;
+	v.y = 1.1;
+	mapa.pointCollision(v);
 
 	return 0;
 }
