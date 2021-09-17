@@ -35,7 +35,7 @@ class map {
 	public:
 	map( std::tuple<float,float>, std::tuple<float,float>, std::tuple<float,float>, std::tuple<float,float>, std::vector<polygon>);
 	bool pointCollision(vertex); // find out if a point collides with any of the obstacles
-	bool polygonCollision(); // find out if a polygon collides with another polygon
+	bool polygonCollision(polygon); // find out if a polygon collides with another polygon
 
 };
 
@@ -170,7 +170,7 @@ bool map::pointCollision(vertex point){
 		edgeCnt = 0;
 	}
 
-	cout << "No collision has occured" << endl;
+	cout << "No point collision has occured" << endl;
 	return false;
 }
 
@@ -179,7 +179,135 @@ bool map::pointCollision(vertex point){
 // polygonCollision
 ////////////////////////////////////////////////////////////////////////////////
 
-bool map::polygonCollision(){
+bool map::polygonCollision(polygon robot){
+	Vector3d obstacle_vec, robot_vec, normal, inThePlane;
+	vertex current, next;
+	inThePlane << 0, 0 , 1;
 
-	return false;
+	// firt iterate through the sides of the robot
+	vertex robot_first_vertex = (robot.vertices).front();
+	vertex robot_last_vertex = (robot.vertices).back();
+
+	for(const auto& vert_it: robot.vertices){
+
+		current = vert_it;
+
+		if(vert_it.x == robot_last_vertex.x && vert_it.x == robot_last_vertex.x){
+			// next vertex in the vector
+
+			next = robot_first_vertex;
+			// vector from current vertex to next
+			robot_vec << (next.x - current.x), (next.y - current.y), 1;
+			// cout << robot_vec << endl;
+
+			// 	// claculate normal vector to the robot edge
+			normal = robot_vec.cross(inThePlane).normalized();
+			// cout << normal << endl;
+
+			// // vector from current vertext to point of interest
+			// v_point << (point.x - current.x), (point.y - current.y), 1;
+
+		}
+		else{
+			next = *std::next(&vert_it,1);
+
+			// vector from current vertex to next
+			robot_vec << (next.x - current.x), (next.y - current.y), 1;
+			// cout << robot_vec << endl;
+
+			// claculate normal vector to the robot edge
+			normal = robot_vec.cross(inThePlane).normalized();
+			// cout << normal << endl;
+		}
+
+
+		// now using that normal find the max and min points of the robot's and the
+		// obstacles' projection on the normal line
+
+		float robotProjectedMax = 0;
+		float robotProjectedMin = 0;
+		float projection;
+		int count = 1;
+
+		for(const auto& vert_it_2: robot.vertices){
+			Vector3d temp;
+			temp << vert_it_2.x , vert_it_2.y , 1;
+
+			projection = normal.dot(temp);
+
+			if(count == 1){
+				robotProjectedMax = projection;
+				robotProjectedMin = projection;
+			}
+
+			else{
+				if(projection > robotProjectedMax){
+					robotProjectedMax = projection;
+				}
+				if(projection < robotProjectedMin){
+					robotProjectedMin = projection;
+				}
+			}
+
+			count++;
+		}
+		cout << "Robot Min " << robotProjectedMin << endl;
+		cout << "Robot Max " << robotProjectedMax << endl;
+	// 	// now using that normal find the max and min points of the obstacles'
+	//
+		float obsProjectedMax = 0;
+		float obsProjectedMin = 0;
+		count = 1;
+
+	for(const auto& poly_it: obstacles){
+
+			for(const auto& vert_it_2: poly_it.vertices){
+				Vector3d temp;
+				temp << vert_it_2.x , vert_it_2.y , 1;
+
+				projection = normal.dot(temp);
+
+				if(count == 1){
+					obsProjectedMax = projection;
+					obsProjectedMin = projection;
+				}
+
+				else{
+					if(projection > obsProjectedMax){
+						obsProjectedMax = projection;
+					}
+					if(projection < obsProjectedMin){
+						obsProjectedMin = projection;
+					}
+				}
+
+				count++;
+			}
+		}
+
+		cout << "Obstacle Min " << obsProjectedMin << endl;
+		cout << "Obstacle Max " << obsProjectedMax << endl;
+
+		if(robotProjectedMin >obsProjectedMax){
+			cout << "No collsion with a robot" << endl;
+			return false;
+		}
+
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////
+
+	// second iterate through the sides of the obstacles
+	for(const auto& poly_it: obstacles){
+
+			for(const auto& vert_it: poly_it.vertices){
+
+			}
+
+	}
+
+
+
+	return true;
 }

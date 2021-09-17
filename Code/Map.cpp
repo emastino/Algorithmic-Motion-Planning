@@ -102,13 +102,32 @@ int main()
 // }
 
 
-
+	// make a map object
 	map mapa(xLim, yLim, start, goal, obstacles);
 
-	vertex v;
-	v.x = 6;
-	v.y = 8;
-	mapa.pointCollision(v);
+	// // test point intersection
+	// vertex v;
+	// v.x = 6;
+	// v.y = 8;
+	// mapa.pointCollision(v);
+
+	// test polygon Collision
+	polygon robot;
+	vertex bot1;
+	bot1.x = 2;
+	bot1.y = 0;
+	vertex bot2;
+	bot2.x = 4;
+	bot2.y = 3;
+	vertex bot3;
+	bot3.x = 0;
+	bot3.y = 2;
+	// there is a better way to do this but I am too lazy atm
+	robot.vertices.push_back(bot1);
+	robot.vertices.push_back(bot2);
+	robot.vertices.push_back(bot3);
+
+	mapa.polygonCollision(robot);
 
 	return 0;
 }
