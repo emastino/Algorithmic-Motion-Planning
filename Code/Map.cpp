@@ -106,8 +106,8 @@ int main()
 	map mapa(xLim, yLim, start, goal, obstacles);
 
 	vertex v;
-	v.x = 1.1;
-	v.y = 1.1;
+	v.x = 6;
+	v.y = 8;
 	mapa.pointCollision(v);
 
 	return 0;

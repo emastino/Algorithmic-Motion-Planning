@@ -116,6 +116,12 @@ bool map::pointCollision(vertex point){
 					// cout << "v_vertex: " << (first.x - current.x) << "," << (first.y - current.y) << "," << 1 << endl;
 					// cout << "v_point: " << (point.x - current.x) << "," << (point.y - current.y) << "," << 1 << endl;
 
+					// collition with a vertex
+					if((point.x - current.x)== 0 && (point.y - current.y)==0){
+						cout << "Collision with polygon " << polyCnt << " has occured" << endl;
+						return true;
+					}
+
 					edgeCnt = edgeCnt +1;
 					if (zvalue >0){
 						zCnt = zCnt +1;
@@ -139,16 +145,23 @@ bool map::pointCollision(vertex point){
 					// cout << "Result Vector: \n" << v_result << endl;
 					float zvalue = v_result(2);
 
+					// collision with a vertex
+					if((point.x - current.x)== 0 && (point.y - current.y)==0){
+						cout << "Collision with polygon " << polyCnt << " has occured" << endl;
+						return true;
+					}
+
 					edgeCnt = edgeCnt +1;
 					if (zvalue >0){
 						zCnt = zCnt +1;
 					}
+
 			}
 
 		}
 
 		if(zCnt == edgeCnt){
-			cout << "collision with polygon " << polyCnt << " has occured" << endl;
+			cout << "Collision with polygon " << polyCnt << " has occured" << endl;
 			return true;
 		}
 
