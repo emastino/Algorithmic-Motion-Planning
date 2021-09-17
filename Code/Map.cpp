@@ -114,20 +114,22 @@ int main()
 	// test polygon Collision
 	polygon robot;
 	vertex bot1;
-	bot1.x = 2;
-	bot1.y = 0;
+	bot1.x = 1;
+	bot1.y = 5;
 	vertex bot2;
-	bot2.x = 4;
-	bot2.y = 3;
+	bot2.x = 2;
+	bot2.y = 6.5;
 	vertex bot3;
 	bot3.x = 0;
-	bot3.y = 2;
+	bot3.y = 6.5;
 	// there is a better way to do this but I am too lazy atm
 	robot.vertices.push_back(bot1);
 	robot.vertices.push_back(bot2);
 	robot.vertices.push_back(bot3);
 
-	mapa.polygonCollision(robot);
+	polygon test_obstacle = mapa.obstacles.back();
+
+	mapa.polygonCollision(robot, test_obstacle);
 
 	return 0;
 }

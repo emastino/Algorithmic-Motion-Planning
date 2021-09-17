@@ -31,11 +31,12 @@ struct polygon{
 // Map class
 class map {
 	float xMapMin, xMapMax, yMapMin, yMapMax, sx, sy,gx,gy;
-	std::vector<polygon> obstacles;
+
 	public:
+		std::vector<polygon> obstacles;
 	map( std::tuple<float,float>, std::tuple<float,float>, std::tuple<float,float>, std::tuple<float,float>, std::vector<polygon>);
 	bool pointCollision(vertex); // find out if a point collides with any of the obstacles
-	bool polygonCollision(polygon); // find out if a polygon collides with another polygon
+	bool polygonCollision(polygon, polygon); // find out if a polygon collides with another polygon
 
 };
 
@@ -62,7 +63,7 @@ map::map( std::tuple<float,float> xLim,  std::tuple<float,float> yLim, std::tupl
 ////////////////////////////////////////////////////////////////////////////////
 // pointCollision
 ////////////////////////////////////////////////////////////////////////////////
-
+// Test if a point collides with a convex polygon
 bool map::pointCollision(vertex point){
 
 	// iterate through points of all polygons on map and  test of the point is
@@ -178,12 +179,13 @@ bool map::pointCollision(vertex point){
 ////////////////////////////////////////////////////////////////////////////////
 // polygonCollision
 ////////////////////////////////////////////////////////////////////////////////
-
-bool map::polygonCollision(polygon robot){
-	Vector3d obstacle_vec, robot_vec, normal, inThePlane;
+// Test if two polygons collide
+bool map::polygonCollision(polygon robot, polygon obstacle){
+	Vector3d edge_vec, robot_vec, normal, inThePlane;
 	vertex current, next;
 	inThePlane << 0, 0 , 1;
 
+	cout << "------------------ Check Robot Edges ------------------" << endl;
 	// firt iterate through the sides of the robot
 	vertex robot_first_vertex = (robot.vertices).front();
 	vertex robot_last_vertex = (robot.vertices).back();
@@ -258,37 +260,141 @@ bool map::polygonCollision(polygon robot){
 		float obsProjectedMax = 0;
 		float obsProjectedMin = 0;
 		count = 1;
+		for(const auto& obs_it: obstacle.vertices){
+			Vector3d temp;
+			temp << obs_it.x , obs_it.y , 1;
 
-	for(const auto& poly_it: obstacles){
+			projection = normal.dot(temp);
 
-			for(const auto& vert_it_2: poly_it.vertices){
-				Vector3d temp;
-				temp << vert_it_2.x , vert_it_2.y , 1;
+			if(count == 1){
+				obsProjectedMax = projection;
+				obsProjectedMin = projection;
+			}
 
-				projection = normal.dot(temp);
-
-				if(count == 1){
+			else{
+				if(projection > obsProjectedMax){
 					obsProjectedMax = projection;
+				}
+				if(projection < obsProjectedMin){
 					obsProjectedMin = projection;
 				}
-
-				else{
-					if(projection > obsProjectedMax){
-						obsProjectedMax = projection;
-					}
-					if(projection < obsProjectedMin){
-						obsProjectedMin = projection;
-					}
-				}
-
-				count++;
 			}
+
+			count++;
 		}
 
 		cout << "Obstacle Min " << obsProjectedMin << endl;
 		cout << "Obstacle Max " << obsProjectedMax << endl;
 
-		if(robotProjectedMin >obsProjectedMax){
+		if(robotProjectedMin >obsProjectedMax || robotProjectedMax < obsProjectedMin){
+			cout << "No collsion with a robot" << endl;
+			return false;
+		}
+
+	}
+
+	cout << "------------------ Check Obstacle Edges ------------------" << endl;
+	// first iterate through the sides of the obstacle
+	vertex obs_first_vertex = (obstacle.vertices).front();
+	vertex obs_last_vertex = (obstacle.vertices).back();
+
+	for(const auto& vert_it: obstacle.vertices){
+
+		current = vert_it;
+
+		if(vert_it.x == obs_last_vertex.x && vert_it.x == obs_last_vertex.x){
+			// next vertex in the vector
+
+			next = obs_first_vertex;
+			// vector from current vertex to next
+			edge_vec << (next.x - current.x), (next.y - current.y), 1;
+			// cout << robot_vec << endl;
+
+			// 	// claculate normal vector to the robot edge
+			normal = edge_vec.cross(inThePlane).normalized();
+			// cout << normal << endl;
+
+			// // vector from current vertext to point of interest
+			// v_point << (point.x - current.x), (point.y - current.y), 1;
+
+		}
+		else{
+			next = *std::next(&vert_it,1);
+
+			// vector from current vertex to next
+			edge_vec << (next.x - current.x), (next.y - current.y), 1;
+			// cout << robot_vec << endl;
+
+			// claculate normal vector to the robot edge
+			normal = edge_vec.cross(inThePlane).normalized();
+			// cout << normal << endl;
+		}
+
+
+		// now using that normal find the max and min points of the robot's and the
+		// obstacles' projection on the normal line
+
+		float robotProjectedMax = 0;
+		float robotProjectedMin = 0;
+		float projection;
+		int count = 1;
+
+		for(const auto& vert_it_2: robot.vertices){
+			Vector3d temp;
+			temp << vert_it_2.x , vert_it_2.y , 1;
+
+			projection = normal.dot(temp);
+
+			if(count == 1){
+				robotProjectedMax = projection;
+				robotProjectedMin = projection;
+			}
+
+			else{
+				if(projection > robotProjectedMax){
+					robotProjectedMax = projection;
+				}
+				if(projection < robotProjectedMin){
+					robotProjectedMin = projection;
+				}
+			}
+
+			count++;
+		}
+		cout << "Robot Min " << robotProjectedMin << endl;
+		cout << "Robot Max " << robotProjectedMax << endl;
+	// 	// now using that normal find the max and min points of the obstacles'
+	//
+		float obsProjectedMax = 0;
+		float obsProjectedMin = 0;
+		count = 1;
+		for(const auto& obs_it: obstacle.vertices){
+			Vector3d temp;
+			temp << obs_it.x , obs_it.y , 1;
+
+			projection = normal.dot(temp);
+
+			if(count == 1){
+				obsProjectedMax = projection;
+				obsProjectedMin = projection;
+			}
+
+			else{
+				if(projection > obsProjectedMax){
+					obsProjectedMax = projection;
+				}
+				if(projection < obsProjectedMin){
+					obsProjectedMin = projection;
+				}
+			}
+
+			count++;
+		}
+
+		cout << "Obstacle Min " << obsProjectedMin << endl;
+		cout << "Obstacle Max " << obsProjectedMax << endl;
+
+		if(robotProjectedMin >obsProjectedMax || robotProjectedMax < obsProjectedMin){
 			cout << "No collsion with a robot" << endl;
 			return false;
 		}
@@ -296,18 +402,6 @@ bool map::polygonCollision(polygon robot){
 	}
 
 
-	////////////////////////////////////////////////////////////////////////////
-
-	// second iterate through the sides of the obstacles
-	for(const auto& poly_it: obstacles){
-
-			for(const auto& vert_it: poly_it.vertices){
-
-			}
-
-	}
-
-
-
+	cout << "COLLISION OCCURED" <<endl;
 	return true;
 }
