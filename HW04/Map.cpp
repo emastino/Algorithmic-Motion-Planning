@@ -28,11 +28,11 @@ int main()
 {
 
 	// map limits
-	std::tuple<float, float> xLim = std::make_tuple(0.0,20);
-	std::tuple<float, float> yLim = std::make_tuple(0.0,30);
+	std::tuple<double, double> xLim = std::make_tuple(-20,20);
+	std::tuple<double, double> yLim = std::make_tuple(-30,30);
 	// map start and goal
-	std::tuple<float, float> start = std::make_tuple(0.0,0.0);
-	std::tuple<float, float> goal = std::make_tuple(10.0,10.0);
+	std::tuple<double, double> start = std::make_tuple(0.0,0.0);
+	std::tuple<double, double> goal = std::make_tuple(10.0,10.0);
 
 
 	// read points in from obstacles.txt and make a vector of obstacles
@@ -43,7 +43,7 @@ int main()
 	int count = 1;
 	vertex ver;
 	// read in obstacle file
-	ifstream myfile("obstacles.txt");
+	ifstream myfile("obstacles_Ex_1.txt");
 	while ( getline (myfile,line) ){
 
 		std::istringstream ss( line);
@@ -71,6 +71,7 @@ int main()
 
 
     }
+
 		obstacles.push_back(poly); // push the polygon into obstacles vector
 	}
 	myfile.close();
@@ -111,25 +112,66 @@ int main()
 	// v.y = 8;
 	// mapa.pointCollision(v);
 
-	// test polygon Collision
+	// Robot polygon
 	polygon robot;
 	vertex bot1;
 	bot1.x = 0;
 	bot1.y = 0;
 	vertex bot2;
-	bot2.x = 0.5;
-	bot2.y = 1;
+	bot2.x = 1;
+	bot2.y = 2;
 	vertex bot3;
 	bot3.x = 0;
-	bot3.y = 1;
+	bot3.y = 2;
 	// there is a better way to do this but I am too lazy atm
 	robot.vertices.push_back(bot1);
 	robot.vertices.push_back(bot2);
 	robot.vertices.push_back(bot3);
 
+	// obstacle
 	polygon test_obstacle = mapa.obstacles.back();
 
-	mapa.polygonCollision(robot, test_obstacle);
+
+	// // see if collision occurs
+	// mapa.polygonCollision(robot, test_obstacle);
+
+	// // test inversion
+	// mapa.invert_polygon(robot);
+
+	// // test rotation
+	// vertex rotVert;
+	// rotVert.x = 0.0;
+	// rotVert.y = 0.0;
+	//
+	// mapa.rotate_polygon(robot, rotVert, 90);
+	double angle[12];
+	angle[0] = -2.5;
+	// test makeCSpaceObstacles
+	for(int i = 0; i<12; i++){
+
+		mapa.makeCSpaceObstacle(test_obstacle, robot, angle[i]);
+		angle[i+1] = angle[i]+0.5;
+	}
+
+	// save C-Space obstacles to txt file
+
+	ofstream cSpaceFile ("cSpaceFile.txt");
+	int cnt = 0;
+
+	for(const auto& poly_it: mapa.c_space_obs){
+
+		for(const auto& vert_it: poly_it.vertices){
+			cSpaceFile << vert_it.x << "," << vert_it.y << ", " << angle[cnt] << endl;
+		}
+
+		cnt++;
+	}
+
+	cSpaceFile.close();
+
+
+
+	// mapa.printObs();
 
 	return 0;
 }
