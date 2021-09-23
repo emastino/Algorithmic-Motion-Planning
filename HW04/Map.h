@@ -40,16 +40,28 @@ class map {
 	public:
 	std::vector<polygon> obstacles;
 	std::vector<polygon> c_space_obs;
+	std::vector<vertex> manipulator_points;
+
+	// constructor
 	map( std::tuple<double,double>, std::tuple<double,double>, std::tuple<double,double>, std::tuple<double,double>, std::vector<polygon>);
+
+	// collisions
 	bool pointCollision(vertex); // find out if a point collides with any of the obstacles
 	bool polygonCollision(polygon, polygon); // find out if a polygon collides with another polygon
+	bool lineCollision(vertex ,vertex );
+
+	// manipulation
 	polygon rotate_polygon(polygon, vertex, double); // rotate a polygon
 	polygon invert_polygon(polygon); // invert the points of a polygon
 	polygon orderVertices(polygon p); // order the vertices of a polygon
 
+	// construction of c-space
 	polygon makeCSpaceObstacle(polygon, polygon, double);
+
+	// debugging
 	void printObs();
-	void printPolygon(polygon);
+	void printPolygon(polygon); // print a selected polygon
+	void printPolygons(); // print all polygons
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +92,7 @@ bool map::pointCollision(vertex point){
 
 	// iterate through points of all polygons on map and  test of the point is
 	// inside or touching the polygon
-		cout << "POINT: " << point.x << "," << point.y  << endl;
+		// cout << "POINT: " << point.x << "," << point.y  << endl;
 	// iterate through obstacles
 	vertex current, first, next, end_v;
 	int polyCnt = 1;
@@ -131,7 +143,7 @@ bool map::pointCollision(vertex point){
 
 					// collition with a vertex
 					if((point.x - current.x)== 0 && (point.y - current.y)==0){
-						cout << "Collision with polygon " << polyCnt << " has occured" << endl;
+						// cout << "Collision with polygon " << polyCnt << " has occured" << endl;
 						return true;
 					}
 
@@ -160,7 +172,7 @@ bool map::pointCollision(vertex point){
 
 					// collision with a vertex
 					if((point.x - current.x)== 0 && (point.y - current.y)==0){
-						cout << "Collision with polygon " << polyCnt << " has occured" << endl;
+						// cout << "Collision with polygon " << polyCnt << " has occured" << endl;
 						return true;
 					}
 
@@ -174,7 +186,7 @@ bool map::pointCollision(vertex point){
 		}
 
 		if(zCnt == edgeCnt){
-			cout << "Collision with polygon " << polyCnt << " has occured" << endl;
+			// cout << "Collision with polygon " << polyCnt << " has occured" << endl;
 			return true;
 		}
 
@@ -183,10 +195,9 @@ bool map::pointCollision(vertex point){
 		edgeCnt = 0;
 	}
 
-	cout << "No point collision has occured" << endl;
+	// cout << "No point collision has occured" << endl;
 	return false;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // polygonCollision
@@ -418,6 +429,32 @@ bool map::polygonCollision(polygon robot, polygon obstacle){
 	return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//  lineCollision
+////////////////////////////////////////////////////////////////////////////////
+// see if the line connecting two points intersects an obstacle
+bool map::lineCollision(vertex v1,vertex v2 ){
+
+	vertex temp;
+
+	double lambda = 0;
+	double delta_lambda = 0.01;
+
+
+	while (lambda <= 1){
+
+		temp.x = v1.x*(1-lambda) + v2.x*lambda;
+		temp.y = v1.y*(1-lambda) + v2.y*lambda;
+
+		if(pointCollision(temp)) {return true;}
+		else {lambda = lambda + delta_lambda;}
+
+	}
+
+
+	return false;
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //  rotate_polygon
@@ -721,4 +758,20 @@ void map::printPolygon(polygon p){
 	for(const auto it: p.vertices){
 		cout << it.x << "," << it.y << endl;
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//  printPolygon
+////////////////////////////////////////////////////////////////////////////////
+// print the vertices of a polygon. good for debugging
+void map::printPolygons(){
+	// cout << "Polygon Vertices" << endl;
+	int count =1;
+
+	for(const auto p_it:obstacles){
+		cout << "Polygon #" << count << endl;
+		printPolygon(p_it);
+		count ++;
+	}
+
 }

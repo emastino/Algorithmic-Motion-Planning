@@ -144,20 +144,23 @@ int main()
 	// rotVert.y = 0.0;
 	//
 	// mapa.rotate_polygon(robot, rotVert, 90);
-	double angle[12];
-	angle[0] = -2.5;
+	int numSlices = 12;
+	double angle[numSlices];
+	double startAngle = 0;
+	double endAngle = 360;
+	double delta = (endAngle - startAngle)/(numSlices-1);
+	angle[0] = startAngle;
+
 	// test makeCSpaceObstacles
-	for(int i = 0; i<12; i++){
+	for(int i = 0; i<numSlices; i++){
 
 		mapa.makeCSpaceObstacle(test_obstacle, robot, angle[i]);
-		angle[i+1] = angle[i]+0.5;
+		angle[i+1] = angle[i]+delta;
 	}
 
 	// save C-Space obstacles to txt file
-
 	ofstream cSpaceFile ("cSpaceFile.txt");
 	int cnt = 0;
-
 	for(const auto& poly_it: mapa.c_space_obs){
 
 		for(const auto& vert_it: poly_it.vertices){
