@@ -33,34 +33,54 @@ if abs(beta_arg) >1
     if(norm(dg(1:2)) < abs(a(1) - a(2) -a(3)))
 %         theta_1 = pi/2
         
-        vg = [dg(1:2);0]/norm([dg(1:2);0]);
-        zed = cross(vg,[0;0;-1]);
+        
         if x==0 &&y==0
             theta_1 = 0;
-        else
-            theta_1 = atan2(zed(2), zed(1));
-        end
-        t1 = theta_1;
-        x1 = a(1)*cos(theta_1);
-        y1 = a(1)*sin(theta_1);
-        
-        d = sqrt((x-x1)^2 + (y-y1)^2);
-        
-        theta_3_arg = (d^2 - a(2)^2 - a(3)^2)/(2*a(3)*a(2));
-        
-        theta_3_temp = acos(theta_3_arg);
-        theta_3_plus = atan2(sqrt(1- cos(theta_3_temp)^2), cos(theta_3_temp));
-        theta_3_minus = atan2(-sqrt(1- cos(theta_3_temp)^2), cos(theta_3_temp)) ;
-        theta_3 = theta_3_plus;
-        t3 = theta_3;
-        
-        
-        beta = acos(( d^2 + a(2)^2-a(3)^2)/(2*d*a(2)));
-        alpha = atan2(norm(dg(1:2)), norm([x1,y1]));
-        
-        t2 = beta+alpha -pi;
-        
+            
+            t1 = theta_1;
+            x1 = a(1)*cos(theta_1);
+            y1 = a(1)*sin(theta_1);
 
+            d = sqrt((x-x1)^2 + (y-y1)^2);
+
+            theta_3_arg = (d^2 - a(2)^2 - a(3)^2)/(2*a(3)*a(2));
+
+            theta_3_temp = acos(theta_3_arg);
+            theta_3_plus = atan2(sqrt(1- cos(theta_3_temp)^2), cos(theta_3_temp));
+    %         theta_3_minus = atan2(-sqrt(1- cos(theta_3_temp)^2), cos(theta_3_temp)) ;
+            theta_3 = theta_3_plus;
+            t3 = theta_3;
+
+
+            beta = acos(( d^2 + a(2)^2-a(3)^2)/(2*d*a(2)));
+            alpha = atan2(norm(dg(1:2)), norm([x1,y1]));
+
+            t2 = -(beta+alpha -pi);
+        else
+            vg = [dg(1:2);0]/norm([dg(1:2);0]);
+            zed = cross(vg,[0;0;-1]);
+            theta_1 = atan2(zed(2), zed(1));
+            t1 = theta_1;
+            x1 = a(1)*cos(theta_1);
+            y1 = a(1)*sin(theta_1);
+
+            d = sqrt((x-x1)^2 + (y-y1)^2);
+
+            theta_3_arg = (d^2 - a(2)^2 - a(3)^2)/(2*a(3)*a(2));
+
+            theta_3_temp = acos(theta_3_arg);
+            theta_3_plus = atan2(sqrt(1- cos(theta_3_temp)^2), cos(theta_3_temp));
+    %         theta_3_minus = atan2(-sqrt(1- cos(theta_3_temp)^2), cos(theta_3_temp)) ;
+            theta_3 = theta_3_plus;
+            t3 = -theta_3;
+
+
+            beta = acos(( d^2 + a(2)^2-a(3)^2)/(2*d*a(2)));
+            alpha = atan2(norm(dg(1:2)), norm([x1,y1]));
+
+            t2 = (beta+alpha -pi);
+        end
+        
         return;
     end
         
@@ -69,8 +89,11 @@ else
     theta_2_min = acos(theta_2_arg);
     theta_1_min = gamma_o - beta;
     theta_1_max = beta + gamma_o;
-    theta_1 = theta_1_max
-    theta_2 = theta_2_min-pi
+    theta_1 = theta_1_max;
+    theta_2 = theta_2_min-pi;
+    % negative options
+%     theta_1 = -theta_1_max
+%     theta_2 = -(theta_2_min-pi)
     
     theta_2_check =1; 
 end
@@ -100,11 +123,11 @@ else
     theta_3_temp = acos(theta_3_arg);
     theta_3_plus = atan2(sqrt(1- cos(theta_3_temp)^2), cos(theta_3_temp));
     theta_3_minus = atan2(-sqrt(1- cos(theta_3_temp)^2), cos(theta_3_temp)) ;
-    theta_3 = theta_3_plus
+    theta_3 = theta_3_plus;
     end
 end
 %% Theta 2
-
+fprintf('Theta 2 check = 0')
 if theta_2_check ==0
     k = (p^2 +q^2 +2*a(3)*(p*cos(theta_3) - q*sin(theta_3)));
     z = ((p*cos(theta_3))^2 + (q*sin(theta_3))^2 + 2*p*a(3)*cos(theta_3) +a(3)^2 ...
@@ -121,11 +144,11 @@ if theta_2_check ==0
 
     fun = @(X) OMEGA - alpha*X^2 - beta*X -gamma*(1-X^2)^(1/2);
 
-    cos_t2 = fzero(fun,0.1)
+    cos_t2 = fzero(fun,0.1);
 
     theta_2_temp = acos(cos_t2);
-    theta_2_plus = atan2(sqrt(1- cos(theta_2_temp)^2), cos(theta_2_temp))
-    theta_2_minus = atan2(-sqrt(1- cos(theta_2_temp)^2), cos(theta_2_temp))
+    theta_2_plus = atan2(sqrt(1- cos(theta_2_temp)^2), cos(theta_2_temp));
+    theta_2_minus = atan2(-sqrt(1- cos(theta_2_temp)^2), cos(theta_2_temp));
     
     theta_2 = theta_2_plus;
 end

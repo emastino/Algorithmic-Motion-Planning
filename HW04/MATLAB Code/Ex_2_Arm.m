@@ -42,10 +42,10 @@ FK = 0;
 
 % goal location
 if FK ==0
-    goal = [2; 1; 1];
+    goal = [-0.3; 0.3; 1];
 end
 % bar lengths
-ai = [1.5; 0.5; 1.5];
+ai = [1; 0.5; 1];
 % length from joint to joint in previous coordinate frame 
 % A1 joint at 0,0, A2 in A1 is at 1, A3 in A2 is 0.5
 d = [ 0; ai(1); ai(2)]; % a values
@@ -61,10 +61,10 @@ speed = 2*pi/0.1;
 n = round(speed);
 theta_fin = zeros(1,3);
 if FK ==1
-    theta = [ linspace(0,pi/6,n); linspace(0,pi/3,n); -linspace(0,7*pi/4,n)];
+    theta = [ linspace(0,pi/6,n); linspace(0,pi/3,n); linspace(0,7*pi/4,n)];
 else
     [theta_fin(1),theta_fin(2),theta_fin(3)]  = IK(goal, ai);
-    theta = [ linspace(0,theta_fin(1),n); linspace(0,theta_fin(2),n); -linspace(0,theta_fin(3),n)];
+    theta = [ linspace(0,theta_fin(1),n); linspace(0,theta_fin(2),n); linspace(0,theta_fin(3),n)];
 end
 
 
@@ -94,13 +94,13 @@ ax = gca; % get current axis
 ax.XMinorGrid = 1; % grid minor on x
 ax.YMinorGrid = 1; % grid minor on x
 axis equal % axis equal
-ax.XLim = 1.3*[-sum(ai) sum(ai)]; % set limits for x
-ax.YLim = 1.3*[-sum(ai) sum(ai)]; % set limits for y
+ax.XLim = 1.2*[-sum(ai) sum(ai)]; % set limits for x
+ax.YLim = 1.2*[-sum(ai) sum(ai)]; % set limits for y
 hold on
 
 if FK ==0
     % plot goal
-    goalP= plot(goal(1),goal(2), 'o', 'MarkerSize', 12,'Color', [0.5 0.98 0.1], 'MarkerFaceColor', [0.5 0.98 0.1]);
+    goalP= plot(goal(1),goal(2), 'o', 'MarkerSize', 12,'Color', [0.5 0.85 0.1], 'MarkerFaceColor', [0.5 0.85 0.1]);
 end
 
 for q = 1:size(theta,2)
@@ -125,13 +125,13 @@ for q = 1:size(theta,2)
     cj = T(:,:,1)*T(:,:,2)*T(:,:,3)*c_joint;
     
     if q ==size(theta,2) && FK == 1
-        goalP= plot(c(1,2),c(2,2), 'o', 'MarkerSize', 12,'Color', [0.5 0.98 0.1], 'MarkerFaceColor', [0.5 0.98 0.1]);
+        goalP= plot(c(1,2),c(2,2), 'o', 'MarkerSize', 12,'Color', [0.5 0.85 0.1], 'MarkerFaceColor', [0.5 0.85 0.1]);
     end
     % plot arm
     
-    h(1) = plot(a(1,1:2),a(2,1:2), '-o', 'Color', 'b', 'MarkerFaceColor', 'b', 'LineWidth', 1.8);
-    h(2) = plot(b(1,1:2),b(2,1:2), '-o', 'Color', 'b', 'MarkerFaceColor', 'b', 'LineWidth', 1.8);
-    h(3) = plot(c(1,1:2),c(2,1:2), '-o', 'Color', 'b', 'MarkerFaceColor', 'b', 'LineWidth', 1.8);
+    h(1) = plot(a(1,1:2),a(2,1:2), '-o', 'Color', 'b', 'MarkerFaceColor', 'b', 'LineWidth', 1.6);
+    h(2) = plot(b(1,1:2),b(2,1:2), '-o', 'Color', 'b', 'MarkerFaceColor', 'b', 'LineWidth', 1.6);
+    h(3) = plot(c(1,1:2),c(2,1:2), '-o', 'Color', 'b', 'MarkerFaceColor', 'b', 'LineWidth', 1.6);
 
     % plot joints
     h(4) = plot(aj(1),aj(2), 'o', 'Color', 'r', 'MarkerFaceColor', 'r', 'MarkerSize',7);
@@ -144,5 +144,9 @@ for q = 1:size(theta,2)
     
 end
 
-
+if FK ==1
+    title('Exercise 2.a Forward Kinematics a_1 = 0.5, a_2 = 1, a_3 = 0.5   \theta_1 = \pi/6, \theta_2 = \pi/3, \theta_3 = 7\pi/4')
+else
+%     title('Exercise 2.b Forward Kinematics a_1 = 1, a_2 = 0.5, a_3 = 1   x = 2, y = 0')
+end
 legend([h(1), h(4), goalP], 'Arm Link', 'Revolute Joint', 'Goal', 'Location', 'NE')

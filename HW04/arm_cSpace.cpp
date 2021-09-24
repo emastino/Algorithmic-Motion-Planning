@@ -189,13 +189,13 @@ int main()
 	// make a map object
 	map map_2(xLim, yLim, start, goal, obstacles_2);
 
-  double delta_theta = 2; // number of points from 0-360 degrees
+  double delta_theta = 1; // number of points from 0-360 degrees
 
   double arm_1_length = 1;
   double arm_2_length = 1;
 
-  double theta_1 = -720;
-  double theta_2 = -720;
+  double theta_1 = 0;
+  double theta_2 = 0;
 
   vertex origin, arm1,arm2;
   origin.x = 0; origin.y =0;
@@ -206,9 +206,9 @@ int main()
 
   ofstream cSpaceFile ("cSpace_Ex_3_b.txt");
 
-  while(theta_1 <= 720){
+  while(theta_1 <= 360){
 
-    while(theta_2 <= 720){
+    while(theta_2 <= 360){
 
       // make function to get position of points
       arm1.x = arm_1_length*cos(theta_1*PI/180.0);
