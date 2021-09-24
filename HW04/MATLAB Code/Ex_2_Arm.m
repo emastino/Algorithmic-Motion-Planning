@@ -1,41 +1,11 @@
-%% Homework 3 supplimentary scripts
-
-%% Exercise 2 - Manipulator
-
-% d = [ 0; 8; 8]; % a values
-% 
-% theta = [ pi/4; pi/2; -pi/6];
-% 
-% % a in coordinta frame A1
-% a_A1 = [4;0;1];
-% 
-% % b in coordinate frame A2
-% b_A2 = [9;0;1];
-% 
-% % c in coordinate frame A3
-% c_A3 = [9;1;1];
-% 
-% % Generate transormation matrices
-% T = zeros([3,3,3]);
-% for j = 1: length(theta) 
-%     T(:,:,j) = [cos(theta(j)), -sin(theta(j)), d(j);
-%                 sin(theta(j)), cos(theta(j)), 0;
-%                 0, 0, 1]; 
-% end
-% 
-% % Global Representations
-% a = T(:,:,1)*a_A1;
-% 
-% b = T(:,:,1)*T(:,:,2)*b_A2;
-% 
-% c = T(:,:,1)*T(:,:,2)*T(:,:,3)*c_A3;
+%% Homework 4
 
 
-%% Fun 
-
-
+%% House Keep
 clear all;
 close all;
+
+%% Run
 
 % Specify If doing Forward Kinematics (1) or not (0)
 FK = 0;
@@ -103,6 +73,8 @@ if FK ==0
     goalP= plot(goal(1),goal(2), 'o', 'MarkerSize', 12,'Color', [0.5 0.85 0.1], 'MarkerFaceColor', [0.5 0.85 0.1]);
 end
 
+
+%% Plot the reults and animate it 
 for q = 1:size(theta,2)
     if q>1
         delete(h)
@@ -147,6 +119,6 @@ end
 if FK ==1
     title('Exercise 2.a Forward Kinematics a_1 = 0.5, a_2 = 1, a_3 = 0.5   \theta_1 = \pi/6, \theta_2 = \pi/3, \theta_3 = 7\pi/4')
 else
-%     title('Exercise 2.b Forward Kinematics a_1 = 1, a_2 = 0.5, a_3 = 1   x = 2, y = 0')
+    title('Exercise 2.b Forward Kinematics a_1 = 1, a_2 = 0.5, a_3 = 1   x = 2, y = 0')
 end
 legend([h(1), h(4), goalP], 'Arm Link', 'Revolute Joint', 'Goal', 'Location', 'NE')
