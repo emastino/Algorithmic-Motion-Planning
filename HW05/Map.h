@@ -1,4 +1,4 @@
-﻿// Discrete Map.h : Include file for standard system include files,
+// Discrete Map.h : Include file for standard system include files,
 // or project specific include files.
 
 #pragma once
@@ -47,9 +47,9 @@ class map {
 	map( std::tuple<double,double>, std::tuple<double,double>, std::tuple<double,double>, std::tuple<double,double>, std::vector<polygon>);
 
 	// collisions
-	bool pointCollision(vertex); // find out if a point collides with any of the obstacles
-	bool polygonCollision(polygon, polygon); // find out if a polygon collides with another polygon
-	bool lineCollision(vertex ,vertex );
+	bool 		pointCollision(vertex); // find out if a point collides with any of the obstacles
+	bool 		polygonCollision(polygon, polygon); // find out if a polygon collides with another polygon
+	bool 		lineCollision(vertex ,vertex );
 
 	// manipulation
 	polygon rotate_polygon(polygon, vertex, double); // rotate a polygon
@@ -60,14 +60,18 @@ class map {
 	polygon makeCSpaceObstacle(polygon, polygon, double);
 
 	// gradient map
-	void gradientDecentPath();
-	void gradient(vertex);
+	void 		gradientDecentPath(double *);
+	vertex 	gradient(vertex, double *);
+	vertex 	minDistanceToObs(polygon, vertex);
+
 	// helpers
-	double dist(vertex, vertex);
+	double 	dist(vertex, vertex);
+
 	// debugging
-	void printObs();
-	void printPolygon(polygon); // print a selected polygon
-	void printPolygons(); // print all polygons
+	void 		printObs();
+	void 		printPolygon(polygon); // print a selected polygon
+	void 		printPolygons(); // print all polygons
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -739,7 +743,7 @@ polygon map::orderVertices(polygon p){
 //  gradientDecent()
 ////////////////////////////////////////////////////////////////////////////////
 // make a potential map
-void Map::gradientDecentPath(){
+void map::gradientDecentPath(double *Qstar){
 
 	// goal bounds
 	double epsilon = 0.25;
@@ -759,13 +763,16 @@ void Map::gradientDecentPath(){
 	bool reachedGoal = false;
 
 	// step size in direction of gradient
-	double alpha = 0.01;
+	double alpha = 0.001;
+
+	ofstream gradientPath ("gradientPath_c.txt");
 
 	while(!reachedGoal){
 
-		cout << "(x,y): " << temp.x << ", " << temp.y << endl;
+		// cout << "(x,y): " << temp.x << ", " << temp.y << endl;
 
-		newGradient = gradient(temp); // bad syntax, need another var probs
+		gradientPath << temp.x << ", " << temp.y << endl;
+		newGradient = gradient(temp,Qstar); // bad syntax, need another var probs
 
 		temp.x = temp.x + alpha*newGradient.x;
 		temp.y = temp.y + alpha*newGradient.y;
@@ -774,11 +781,15 @@ void Map::gradientDecentPath(){
 		gradDecPath.push_back(temp);
 
 		if((pow(temp.x-gx,2.0) +  pow(temp.y-gy,2.0))<=pow(epsilon,2.0)){
+			cout << "You reached goal!" << endl;
 			reachedGoal = true;
 		}
 
 
+
 	}
+
+	gradientPath.close();
 
 }
 
@@ -788,11 +799,10 @@ void Map::gradientDecentPath(){
 //  gradient()
 ////////////////////////////////////////////////////////////////////////////////
 // return the gradient direction
-void Map::gradient(vertex current){
-
+vertex map::gradient(vertex current, double *Qstar){
 
 	// dStarGoal
-	float dStarGoal = 5;
+	double dStarGoal = 5 ;
 
 	// start location
 	vertex start;
@@ -804,28 +814,56 @@ void Map::gradient(vertex current){
 	goal.x = gx;
 	goal.y = gy;
 
-	// gradient scalar
-	double gamma = 1;
 
 	// gradients
 	vertex gradient, attractive, repulsive;
 
 	// attractive gradient //////////////////////////////////////////////////////
+	// scalar
+	double xi = 0.5;
+
 	if(dist(current,goal) <= dStarGoal){
-		attractive.x = gamma*(current.x - goal.x);
-		attractive.y = gamma*(current.y - goal.y);
+		attractive.x = xi*(current.x - goal.x);
+		attractive.y = xi*(current.y - goal.y);
 	}
 	else{
-		attractive.x = dStarGoal*gamma*(current.x - goal.x)/dist(current,goal);
-		attractive.y = dStarGoal*gamma*(current.y - goal.y)/dist(current,goal);
+		attractive.x = dStarGoal*xi*(current.x - goal.x)/dist(current,goal);
+		attractive.y = dStarGoal*xi*(current.y - goal.y)/dist(current,goal);
 	}
 
 
 	// repulsive gradient ///////////////////////////////////////////////////////
+	double d[numberOfObstacles];
+	double eta = 10;		// repulsive scalar
+	int count = 0;		// count to populate Qstar and d arrays
 
+	//initialize repulsive function
 	repulsive.x = 0;
 	repulsive.y = 0;
 
+
+	for (const auto& poly_it: obstacles){
+		vertex c = minDistanceToObs(poly_it, current);
+		vertex del_d;
+
+		d[count] = dist(current,c);
+
+		// gradient of d_i
+		if(d[count] <= Qstar[count]){
+
+			del_d.x = (current.x-c.x)/d[count];
+			del_d.y =(current.y-c.y)/d[count];
+			repulsive.x = repulsive.x + del_d.x*eta*(1/Qstar[count] - 1/d[count])/pow(d[count],2);
+			repulsive.y = repulsive.y + del_d.y*eta*(1/Qstar[count] - 1/d[count])/pow(d[count],2);
+		}
+		else{
+			repulsive.x = repulsive.x + 0.0;
+			repulsive.y = repulsive.y + 0.0;
+		}
+
+		count ++; 	// increment counter
+
+	}
 
 	// complete gradient
 	gradient.x = -attractive.x - repulsive.x;
@@ -836,14 +874,97 @@ void Map::gradient(vertex current){
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+//  minDistanceToObs
+////////////////////////////////////////////////////////////////////////////////
+// return minimum distance to obstacles. Will only work with rectangles
+// for now
 
+vertex map::minDistanceToObs(polygon poly, vertex current){
+	int count = 1;
+	double minDistance, xmin,xmax, ymin,ymax;
+	vertex c;
+
+	for (const auto& vert_it : poly.vertices){
+		// set the first
+		if(count == 1) {
+			xmin = vert_it.x;
+			ymin = vert_it.y;
+
+			xmax= vert_it.x;
+			ymax = vert_it.y;
+
+			minDistance = dist(vert_it,current);
+			c = vert_it;
+		}
+
+		// x min
+		if(vert_it.x < xmin){
+			xmin = vert_it.x;
+		}
+		//x max
+		if(vert_it.x >xmax){
+			xmax = vert_it.x;
+		}
+
+
+		// y min
+		if(vert_it.y < ymin){
+			ymin = vert_it.y;
+		}
+		//y max
+		if(vert_it.y > ymax){
+			ymax = vert_it.y;
+		}
+
+		if(minDistance > dist(vert_it,current)){
+			minDistance = dist(vert_it,current);
+			c = vert_it;
+		}
+
+
+		count++; //increment counter
+	}
+
+	// now we have the max and min values of the shape for X
+	if(current.x >= xmin && current.x < xmax){
+		if(current.y > ymax){
+			minDistance = current.y-ymax;
+			c.x = current.x;
+			c.y = ymax;
+		}
+		else{
+			minDistance = ymin-current.y;
+			c.x = current.x;
+			c.y = ymin;
+		}
+	}
+
+	// now we have the max and min values of the shape for Y
+	if(current.y >= ymin && current.y < ymax){
+		if(current.x > xmax){
+			minDistance = current.x-xmax;
+			c.x = xmax;
+			c.y = current.y;
+
+		}
+		else{
+			minDistance = xmin-current.x;
+			c.x = xmin;
+			c.y = current.y;
+		}
+	}
+
+
+	return c;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//  gradientDecent()
+//  dist()
 ////////////////////////////////////////////////////////////////////////////////
-// make a potential map
-double Map::dist(vertex v1, vertex v2){
+// return distance between two points/Vertices
+double map::dist(vertex v1, vertex v2){
 
 	return sqrt((pow(v1.x-v2.x,2.0) +  pow(v1.y-v2.y,2.0)));
 

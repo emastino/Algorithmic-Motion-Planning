@@ -8,11 +8,11 @@ close all;
 %% Run
 
 % Specify If doing Forward Kinematics (1) or not (0)
-FK = 0;
+FK = 1;
 
 % goal location
 if FK ==0
-    goal = [-0.3; 0.3; 1];
+    goal = [2; 0; 1];
 end
 % bar lengths
 ai = [1; 0.5; 1];
