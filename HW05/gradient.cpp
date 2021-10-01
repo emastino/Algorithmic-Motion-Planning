@@ -89,15 +89,38 @@ int main()
 	// std::tuple<double, double> goal = std::make_tuple(10.0,0.0);
 	//
 	//
+	//
 	// std::vector<polygon> obstacles_a = makeObstacles("obstacles_a.txt");
 	//
 	// // make a map object
 	// map mapa_a(xLim, yLim, start, goal, obstacles_a);
 	//
 	// // get gradient
-	// double Qstar[obstacles_a.size()] = {11, 0.01 };
+	// double Qstar[obstacles_a.size()] = {11, 2.5};
 	//
 	// mapa_a.gradientDecentPath(Qstar);
+	//
+	// vertex point, arrow;
+	//
+	// ofstream vectorField ("vectorField.txt");
+	//
+	// for(double x = -1; x <= 14; x=x+0.5){
+	//
+	// 	for (double y = -4; y <= 4; y=y+0.5){
+	// 		point.x = x;
+	// 		point.y =y;
+	// 		if(!mapa_a.pointCollision(point)){
+	// 			arrow = mapa_a.gradient(point,Qstar);
+	// 			vectorField << point.x << ", " << point.y << ", " << -arrow.x << ", " << -arrow.y << endl;
+	// 		}
+	// 		// else{
+	// 		// 	vectorField << point.x << ", " << point.y << ", " << 0 << ", " << 0 << endl;
+	// 		// }
+	// 	}
+	// }
+	//
+	//
+	// vectorField.close();
 	//
 	// // print the obstacles
 	// mapa_a.printPolygons();
@@ -121,14 +144,14 @@ int main()
 	// map mapa_b(xLim, yLim, start, goal, obstacles_b);
 	//
 	// // get gradient
-	// double Qstar[obstacles_b.size()] = {1.25, 0.01 , 13.0 , 2.0 , 2.0 };
+	// double Qstar[obstacles_b.size()] = {1, 0.3 , 13.0 , 7.0 , 2.0 };
 	//
 	// mapa_b.gradientDecentPath(Qstar);
 	//
 	// // print the obstacles
 	// mapa_b.printPolygons();
-
-
+	//
+	//
 	// mapa_b.printObs();
 
 
@@ -151,7 +174,7 @@ int main()
 	map mapa_c(xLim, yLim, start, goal, obstacles_c);
 
 	// get gradient
-	double Qstar[obstacles_c.size()] = {9, 2.5 , 2 , 0.01 , 2, 2 , 2 , 2 , 2 };
+	double Qstar[obstacles_c.size()] = {8.5, 3 , 25 , 0.25 , 0.25, 0.25 , 0.25 , 0.25 , 0.25 };
 
 	mapa_c.gradientDecentPath(Qstar);
 

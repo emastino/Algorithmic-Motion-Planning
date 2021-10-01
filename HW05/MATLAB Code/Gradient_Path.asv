@@ -143,8 +143,8 @@ path = importdata("gradientPath_b.txt");
 % plot path
 path_h = plot(path(:,1), path(:,2), '--k', 'LineWidth', 1.2);
 
-title('Workspace 1 Exercise 2.b')
 legend ([start_h, goal_h, path_h], 'Start','Goal', 'Path', 'location', 'nw')
+title('Exercise 2.a : \xi = 1, \eta = 60, d^*_{goal} = 5, and all Q^*_1 = 11 & Q^*_2 = 2.5')
 
 % Clacultae length of path
 path_length = 0;
@@ -176,7 +176,7 @@ grid minor
 % 
 % start and goal 
 start = [0,0];
-goal = [35,0];
+goal = [35,10];
 % plot start and goal
 start_h = plot (start(1), start(2), 'o','MarkerSize', 10,'MarkerEdgeColor', 'r', 'MarkerFaceColor', 'r');
 goal_h = plot (goal(1), goal(2), 'o', 'MarkerSize',10, 'MarkerEdgeColor', 'g', 'MarkerFaceColor', 'g') ;
@@ -188,13 +188,6 @@ path_h = plot(path(:,1), path(:,2), '--k', 'LineWidth', 1.2);
 
 legend ([start_h, goal_h, path_h], 'Start','Goal', 'Path', 'location', 'nw')
 
-% Clacultae length of path
-path_length = 0;
-
-for q = 1:length(path)-1
-    path_length = path_length + sqrt((path(q+1,1)-path(q,1))^2 + (path(q+1,2)-path(q,2))^2);
-end
-fprintf('Path Length: %0.3f \n', path_length)
 
 
 %% Unique elements

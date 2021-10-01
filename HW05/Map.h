@@ -98,7 +98,9 @@ map::map( std::tuple<double,double> xLim,  std::tuple<double,double> yLim, std::
 ////////////////////////////////////////////////////////////////////////////////
 // pointCollision
 ////////////////////////////////////////////////////////////////////////////////
-// Test if a point collides with a convex polygon
+// Test if a point collides with any obsyacle in the map
+// False if no collision occurs
+// True if collsion occurs
 bool map::pointCollision(vertex point){
 
 	// iterate through points of all polygons on map and  test of the point is
@@ -765,8 +767,9 @@ void map::gradientDecentPath(double *Qstar){
 	// step size in direction of gradient
 	double alpha = 0.001;
 
-	ofstream gradientPath ("gradientPath_c.txt");
 
+	ofstream gradientPath ("gradientPath_c.txt");
+	int count = 0;
 	while(!reachedGoal){
 
 		// cout << "(x,y): " << temp.x << ", " << temp.y << endl;
@@ -802,7 +805,7 @@ void map::gradientDecentPath(double *Qstar){
 vertex map::gradient(vertex current, double *Qstar){
 
 	// dStarGoal
-	double dStarGoal = 5 ;
+	double dStarGoal = 5;
 
 	// start location
 	vertex start;
@@ -820,7 +823,7 @@ vertex map::gradient(vertex current, double *Qstar){
 
 	// attractive gradient //////////////////////////////////////////////////////
 	// scalar
-	double xi = 0.5;
+	double xi = 1;
 
 	if(dist(current,goal) <= dStarGoal){
 		attractive.x = xi*(current.x - goal.x);
@@ -834,7 +837,7 @@ vertex map::gradient(vertex current, double *Qstar){
 
 	// repulsive gradient ///////////////////////////////////////////////////////
 	double d[numberOfObstacles];
-	double eta = 10;		// repulsive scalar
+	double eta = 1;		// repulsive scalar
 	int count = 0;		// count to populate Qstar and d arrays
 
 	//initialize repulsive function
