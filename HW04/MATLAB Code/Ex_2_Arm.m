@@ -8,14 +8,14 @@ close all;
 %% Run
 
 % Specify If doing Forward Kinematics (1) or not (0)
-FK = 1;
+FK = 0;
 
 % goal location
 if FK ==0
-    goal = [2; 0; 1];
+    goal = [1; 1; 1];
 end
 % bar lengths
-ai = [1; 0.5; 1];
+ai = [1; 2; 1];
 % length from joint to joint in previous coordinate frame 
 % A1 joint at 0,0, A2 in A1 is at 1, A3 in A2 is 0.5
 d = [ 0; ai(1); ai(2)]; % a values
