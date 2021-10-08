@@ -32,7 +32,7 @@ struct polygon{
 	std::vector<vertex> vertices;
 };
 
-// grid cell structure
+// grid cell structure for wavefron planner
 struct cell{
 	polygon cellPoly; // polygon defining cell
 	vertex 	center; // center of polygon
@@ -42,8 +42,330 @@ struct cell{
 
 };
 
+// Graph Node
+struct node{
+	int graph_number;
+	int h; // heuristic value
+	int g;  // distance from it to goal
+	int f = 10000; // some large value
+	bool inO = false;
+	bool inC = false;
+	std::vector<int> adjacencts;
+	std::vector<int> weights; // weights to each neighbor
 
+	int backpointer;
+
+};
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// Graph Class
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+class Graph{
+
+	int numOfNodes, startNode, goalNode;
+
+	public:
+		// public varsiables
+		std::vector<node> graphNodes;
+
+		// constructor
+		Graph(int,int,int);
+
+		// graph operations
+		void addNode(int, int, std::vector<int>, std::vector<int>);
+
+		// search graph
+		void AstarSearch();
+		void DijkstrasSearch();
+
+		// debugging
+		void printGraph();
+};
+
+
+// Graph() constructor
+Graph::Graph(int n, int s, int g){
+	startNode = s;
+	goalNode = g;
+	numOfNodes = n;
+	graphNodes.resize(numOfNodes);
+
+}
+
+// add node
+void Graph::addNode(int node_num, int heuristic, std::vector<int> adjacent, std::vector<int> weight){
+
+		node nodeToAdd;
+		// cout << "Made Node" << endl;
+		nodeToAdd.graph_number = node_num;
+		nodeToAdd.h = heuristic;
+		nodeToAdd.adjacencts = adjacent;
+		nodeToAdd.adjacencts.resize(adjacent.size());
+		nodeToAdd.weights = weight; // weights to each neighbor
+
+		graphNodes[node_num] = nodeToAdd;
+
+}
+
+// print graphNodes
+void Graph::printGraph(){
+	for(const auto& graph_it: graphNodes){
+		cout << "------ Node #" << graph_it.graph_number << " ------" << endl;
+		cout << "Node Heuristic: " << graph_it.h  << endl;
+		cout << "Number of neigbors: " << graph_it.adjacencts.size() << endl;
+
+		cout << "Node Neighbors: ";
+		for(int i = 0; i < graph_it.adjacencts.size(); i++){
+			cout << graph_it.adjacencts[i] << ", ";
+		}
+		cout << endl;
+
+		cout << "Node Neighbors Weights: ";
+		for(int i = 0; i < graph_it.weights.size(); i++){
+			cout << graph_it.weights[i] << ", ";
+		}
+		cout << endl;
+
+
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// A* Search
+////////////////////////////////////////////////////////////////////////////////
+
+void Graph::AstarSearch(){
+
+	int minNode = 0; 	// keep track of the node with min heuristic, initialize as
+										// start node
+
+	std::vector<node> graphNodesCopy = graphNodes;
+
+
+	std::vector<node> OList;
+	std::vector<node> CList;
+	// distance from start to start is 0
+	graphNodesCopy[minNode].g = 0;
+	graphNodesCopy[minNode].f = graphNodesCopy[minNode].g + graphNodesCopy[minNode].h;
+	OList.push_back(graphNodesCopy[minNode]); // current node is start node
+	graphNodesCopy[minNode].inO = true;
+
+	int numberOfIterations = 0;
+
+	cout << "             A* Started             " << endl;
+
+
+	while (OList.size()>0){
+
+		// cout << "----------------------------------" << endl;
+		minNode = OList.front().graph_number; // make the min the first in the list
+
+		// pick one with smallest heuristic in the OList
+		int minNode_index = 0;
+		int count = 0;
+		for(const auto& OList_it : OList){
+			if(OList_it.f < graphNodesCopy[minNode].f){
+				minNode = OList_it.graph_number;
+				minNode_index = count;
+			}
+			count++;
+		}
+
+		// cout << "Node With Min Heuristic: " << minNode << endl;
+		// // earse min heuristic node from OList
+		OList.erase(OList.begin() + minNode_index-1);
+		graphNodesCopy[minNode].inC = false;
+
+		// Add the min heuristic node to CList
+		CList.push_back(graphNodesCopy[minNode]);
+		graphNodesCopy[minNode].inC = true;
+
+		// check if Goal Node is found
+		if(minNode == goalNode){
+			cout << "Goal Found" << endl;
+			break;
+		}
+
+		// look at all of the neigbors of node with min heuristic
+		for(int i = 0;  i < graphNodesCopy[minNode].adjacencts.size(); i++){
+
+			int neighborNode = graphNodesCopy[minNode].adjacencts[i];
+			int neighborNodeWeight = graphNodesCopy[minNode].weights[i];
+
+			// cout << "Neighbor Node: " << neighborNode << endl;
+			// cout << "Neighbor Node Weight: " << neighborNodeWeight<< endl;
+			if(!graphNodesCopy[neighborNode].inC){
+				// cout << "Node not in C" << endl;
+				if(!graphNodesCopy[neighborNode].inO){
+					// cout << "Node not in O" << endl;
+					graphNodesCopy[neighborNode].g = graphNodesCopy[minNode].g + neighborNodeWeight;
+					graphNodesCopy[neighborNode].f = graphNodesCopy[neighborNode].g + graphNodesCopy[neighborNode].h;
+					OList.push_back(graphNodesCopy[neighborNode]);
+					graphNodesCopy[neighborNode].inO = true;
+					graphNodesCopy[neighborNode].backpointer = minNode;
+
+
+				}
+				else{
+					// cout << "Node in O" << endl;
+					if(graphNodesCopy[minNode].g + neighborNodeWeight < graphNodesCopy[neighborNode].g){
+						// cout << "Update Back Pointer to of "<< neighborNode<< " to " << minNode << endl;
+						graphNodesCopy[neighborNode].g = graphNodesCopy[minNode].g + neighborNodeWeight;
+						graphNodesCopy[neighborNode].backpointer = minNode;
+					}
+				}
+
+			}
+		}
+
+
+		numberOfIterations++;
+
+	}
+
+
+
+	cout << "---------- Path Information  ----------" << endl;
+
+	// print path
+	int currentNode = goalNode;
+
+	while(currentNode != startNode){
+
+		cout << currentNode << "<-" ;
+		currentNode = graphNodesCopy[currentNode].backpointer;
+	}
+	cout << endl;
+	cout << "Number of iterations: " << numberOfIterations << endl;
+	cout << "Path Length: " << graphNodesCopy[goalNode].g << endl;
+	cout << "---------------------------------------" << endl;
+
+	cout << "             A* Complete             " << endl;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Dijkstra's Search
+////////////////////////////////////////////////////////////////////////////////
+
+void Graph::DijkstrasSearch(){
+
+	int minNode = 0; 	// keep track of the node with min heuristic, initialize as
+										// start node
+
+	std::vector<node> graphNodesCopy = graphNodes;
+
+
+	std::vector<node> OList;
+	std::vector<node> CList;
+	// distance from start to start is 0
+	graphNodesCopy[minNode].g = 0;
+	graphNodesCopy[minNode].f = graphNodesCopy[minNode].g;
+	OList.push_back(graphNodesCopy[minNode]); // current node is start node
+	graphNodesCopy[minNode].inO = true;
+
+	int numberOfIterations = 0;
+
+	cout << "             Dijkstra's Started             " << endl;
+
+
+	while (OList.size()>0){
+
+		// cout << "----------------------------------" << endl;
+		minNode = OList.front().graph_number; // make the min the first in the list
+
+		// // pick one with smallest heuristic in the OList
+		// int minNode_index = 0;
+		// int count = 0;
+		// for(const auto& OList_it : OList){
+		// 	if(OList_it.f < graphNodesCopy[minNode].f){
+		// 		minNode = OList_it.graph_number;
+		// 		minNode_index = count;
+		// 	}
+		// 	count++;
+		// }
+
+		// cout << "Node With Min Heuristic: " << minNode << endl;
+		// // earse min heuristic node from OList
+		OList.erase(OList.begin());
+		graphNodesCopy[minNode].inC = false;
+
+		// Add the min heuristic node to CList
+		CList.push_back(graphNodesCopy[minNode]);
+		graphNodesCopy[minNode].inC = true;
+
+		// check if Goal Node is found
+		if(minNode == goalNode){
+			cout << "Goal Found" << endl;
+			break;
+		}
+
+		// look at all of the neigbors of node with min heuristic
+		for(int i = 0;  i < graphNodesCopy[minNode].adjacencts.size(); i++){
+
+			int neighborNode = graphNodesCopy[minNode].adjacencts[i];
+			int neighborNodeWeight = graphNodesCopy[minNode].weights[i];
+
+			// cout << "Neighbor Node: " << neighborNode << endl;
+			// cout << "Neighbor Node Weight: " << neighborNodeWeight<< endl;
+			if(!graphNodesCopy[neighborNode].inC){
+				// cout << "Node not in C" << endl;
+				if(!graphNodesCopy[neighborNode].inO){
+					// cout << "Node not in O" << endl;
+					graphNodesCopy[neighborNode].g = graphNodesCopy[minNode].g + neighborNodeWeight;
+					graphNodesCopy[neighborNode].f = graphNodesCopy[neighborNode].g;
+					OList.push_back(graphNodesCopy[neighborNode]);
+					graphNodesCopy[neighborNode].inO = true;
+					graphNodesCopy[neighborNode].backpointer = minNode;
+
+
+				}
+				else{
+					// cout << "Node in O" << endl;
+					if(graphNodesCopy[minNode].g + neighborNodeWeight < graphNodesCopy[neighborNode].g){
+						// cout << "Update Back Pointer to of "<< neighborNode<< " to " << minNode << endl;
+						graphNodesCopy[neighborNode].g = graphNodesCopy[minNode].g + neighborNodeWeight;
+						graphNodesCopy[neighborNode].backpointer = minNode;
+					}
+				}
+
+			}
+		}
+
+
+		numberOfIterations++;
+
+	}
+
+
+
+	cout << "---------- Path Information  ----------" << endl;
+
+	// print path
+	int currentNode = goalNode;
+
+	while(currentNode != startNode){
+
+		cout << currentNode << "<-" ;
+		currentNode = graphNodesCopy[currentNode].backpointer;
+	}
+	cout << endl;
+	cout << "Number of iterations: " << numberOfIterations << endl;
+	cout << "Path Length: " << graphNodesCopy[goalNode].g << endl;
+	cout << "---------------------------------------" << endl;
+
+	cout << "             Dijkstra's Completed             " << endl;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // Map class
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 class map {
 	double xMapMin, xMapMax, yMapMin, yMapMax, sx, sy,gx,gy;
 
