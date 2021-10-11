@@ -12,7 +12,7 @@ hold on
 for i = 1:size(ospace,1)
    vertices = ospace(i,:);
    pgon = polyshape(vertices(1:2:end),vertices(2:2:end));
-   plot(pgon)
+   plot(pgon, 'FaceColor', [0.2,0.3,0.85])
 end
 axis equal
 
@@ -42,7 +42,7 @@ for q = 1:length(path)-1
 end
 fprintf('Path Length: %0.3f \n', path_length)
 
-
+legend([start_h, goal_h, path_h], 'Start', 'Goal', 'Path', 'Location', 'NW')
 
 
 %% Exercise 1 Workspace 2
@@ -55,7 +55,7 @@ hold on
 for i = 1:size(ospace,1)
    vertices = ospace(i,:);
    pgon = polyshape(vertices(1:2:end),vertices(2:2:end));
-   plot(pgon)
+   plot(pgon, 'FaceColor', [0.2,0.3,0.85])
 end
 axis equal
 
@@ -84,5 +84,7 @@ for q = 1:length(path)-1
     path_length = path_length + sqrt((path(q+1,1)-path(q,1))^2 + (path(q+1,2)-path(q,2))^2);
 end
 fprintf('Path Length: %0.3f \n', path_length)
+
+legend([start_h, goal_h, path_h], 'Start', 'Goal', 'Path', 'Location', 'NE')
 
 
