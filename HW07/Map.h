@@ -2037,7 +2037,7 @@ bool map::DijkstrasSearch(std::vector<node> *graphNodes){
 		// print path
 		int currentNode = goalNode;
 
-		ofstream PRM_Path("Ex_1_a_i_.txt");
+		ofstream PRM_Path("Ex_1_a_i_path.txt");
 
 		while(currentNode != startNode){
 			PRM_Path << graphNodesCopy[currentNode].loc.x << ", " << graphNodesCopy[currentNode].loc.y << endl;
@@ -2045,6 +2045,7 @@ bool map::DijkstrasSearch(std::vector<node> *graphNodes){
 			currentNode = graphNodesCopy[currentNode].backpointer;
 
 		}
+		PRM_Path << graphNodesCopy[currentNode].loc.x << ", " << graphNodesCopy[currentNode].loc.y << endl;
 		PRM_Path.close();
 
 		cout << endl;
@@ -2170,7 +2171,20 @@ void map::PRM(int n, double r){
 
 	DijkstrasSearch(&graphNodes);
 
+	// output PRM into a txt file
 
+	ofstream PRM_Graph("PRM_Graph_Ex_1_a_i.txt");
+
+	for(int i = 0 ; i < numberOfNodes; i++){
+		PRM_Graph << graphNodes[i].loc.x << ", " << graphNodes[i].loc.y;
+		for(const auto& adj_it : graphNodes[i].adjacencts){
+
+				PRM_Graph << ", "<< graphNodes[adj_it].loc.x << ", " << graphNodes[adj_it].loc.y;
+		}
+		PRM_Graph << endl;
+	}
+
+	PRM_Graph.close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
