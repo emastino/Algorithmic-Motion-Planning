@@ -1,7 +1,7 @@
 %% House Keeping
 clc; close all; clear all;
 
-%% Plot PRM, PATH, and obstacles
+%% Plot PRM, PATH, and obstacles Exercise 1 a) i.
 
 % Obstacles
 ospace= importdata("obstacles_a.txt");
@@ -68,3 +68,57 @@ titleName = ['PRM Exercise 1 (a) i): Path Length ' num2str(path_length)];
 title(titleName);
 
 legend([start_h, goal_h, path_h], 'Start', 'Goal', 'Path', 'Location', 'NW')
+
+
+
+%% Box Plot Exercise 1 b) ii.
+% benchmark results
+VS = importdata("PRM_Benchmark_validSol.txt")';
+PL = importdata("PRM_Benchmark_pathLen.txt")';
+CT = importdata("PRM_Benchmark_compTime.txt")'/1000000;
+
+%%
+figure
+% subplot(3,1,1)
+boxplot(VS)
+grid minor
+ylim([0 1.05]);
+ylabel('Successes'); xlabel('Benchmark Parameters');
+xticklabels({'(200; 0:5)', '(200; 1)', '(200; 1:5)', '(200; 2)', '(500; 0:5)', '(500; 1)', '(500; 1:5)', '(500; 2)'})
+title('Valid Solutions = 1, Unsuccessful Solution = 0');
+
+figure
+% subplot(3,1,2)
+boxplot(PL)
+grid minor
+ylabel('Path Length'); xlabel('Benchmark Parameters');
+xticklabels({'(200, 0.5)', '(200, 1)', '(200, 1.5)', '(200, 2)', '(500, 0.5)', '(500, 1)', '(500, 1.5)', '(500, 2)'})
+title('Path Length');
+
+
+figure
+% subplot(3,1,3)
+boxplot(CT)
+grid minor
+ylabel('Time [s]'); xlabel('Benchmark Parameters');
+xticklabels({'(200, 0.5)', '(200, 1)', '(200, 1.5)', '(200, 2)', '(500, 0.5)', '(500, 1)', '(500, 1.5)', '(500, 2)'})
+title('Computation Time');
+
+%% 
+weights = eye(3);
+for i =1:8
+    
+    meanVS = mean(VS(:,i));
+    meanPL = mean(PL(:,i));
+    meanCT = mean(CT(:,i));
+    
+    if meanPL == 0
+        score(i) = 2*meanVS + 0.2/meanCT;
+    else
+        score(i) = 1*meanVS + 2/meanPL + 0.2/meanCT;
+    end
+end
+score
+
+bestscoreIndex = find(score == max(score))
+

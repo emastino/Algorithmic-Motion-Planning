@@ -28,7 +28,8 @@ using namespace std;
 
 // vertex structure
 struct vertex{
-	double x,y;
+	double x{};
+	double y{};
 };
 
 // Polygon struct
@@ -60,9 +61,15 @@ struct node{
 
 	int backpointer; // used for search algorithms to point to it backpointer/parent
 									// node in the contect of the graph
-
 };
 
+// structure to store PRM benchmark data for each run
+struct PRM_Benchmark{
+
+	int validSolution; // 1 if valid solution with a pth, 0 if no path can be generated
+	double pathLength; // length of the path generated
+	double compTime; 		// computation time of PRM in microsecond counts
+};
 
 
 
@@ -123,8 +130,8 @@ class map {
 	// PRMs and Graphs
 	void addNode(int, vertex, std::vector<node>*);
 	void AstarSearch(std::vector<node> *);
-	bool DijkstrasSearch(std::vector<node> *);
-	void PRM(int, double);
+	bool DijkstrasSearch(std::vector<node> *,bool ,PRM_Benchmark *);
+	PRM_Benchmark PRM(int, double,bool, bool);
 	void printGraph(std::vector<node> *);
 
 
@@ -619,7 +626,7 @@ bool map::polygonCollision(polygon robot, polygon obstacle){
 ////////////////////////////////////////////////////////////////////////////////
 // polygonObstacleCollision
 ////////////////////////////////////////////////////////////////////////////////
-// check if a polygon collides with any obstacle
+// check if a polygon collides with any obstacle on the map
 bool map::polygonObstacleCollision(polygon poly){
 
 	for(const auto& poly_it:obstacles){
@@ -636,24 +643,29 @@ bool map::polygonObstacleCollision(polygon poly){
 // see if the line connecting two points intersects an obstacle
 bool map::lineCollision(vertex v1,vertex v2 ){
 
-	vertex temp;
+	// vertex temp;
+	//
+	// double lambda = 0;
+	// double delta_lambda = 0.01;
+	//
+	//
+	// while (lambda <= 1){
+	//
+	// 	temp.x = v1.x*(1-lambda) + v2.x*lambda;
+	// 	temp.y = v1.y*(1-lambda) + v2.y*lambda;
+	//
+	// 	if(pointCollision(temp)) {return true;}
+	// 	else {lambda = lambda + delta_lambda;}
+	//
+	// }
 
-	double lambda = 0;
-	double delta_lambda = 0.01;
+	polygon poly;
+	poly.vertices.push_back(v1);
+	poly.vertices.push_back(v2);
 
 
-	while (lambda <= 1){
 
-		temp.x = v1.x*(1-lambda) + v2.x*lambda;
-		temp.y = v1.y*(1-lambda) + v2.y*lambda;
-
-		if(pointCollision(temp)) {return true;}
-		else {lambda = lambda + delta_lambda;}
-
-	}
-
-
-	return false;
+	return polygonObstacleCollision(poly);
 
 }
 
@@ -1938,7 +1950,7 @@ void map::AstarSearch(std::vector<node> *graphNodes){
 // Dijkstra's Search
 ////////////////////////////////////////////////////////////////////////////////
 
-bool map::DijkstrasSearch(std::vector<node> *graphNodes){
+bool map::DijkstrasSearch(std::vector<node> *graphNodes,bool outputPath, PRM_Benchmark *benchM){
 
 	bool goalFound = false;
 
@@ -1958,7 +1970,7 @@ bool map::DijkstrasSearch(std::vector<node> *graphNodes){
 
 	int numberOfIterations = 0;
 
-	cout << "             Dijkstra's Started             " << endl;
+	// cout << "             Dijkstra's Started             " << endl;
 
 
 	while (OList.size()>0){
@@ -1988,7 +2000,7 @@ bool map::DijkstrasSearch(std::vector<node> *graphNodes){
 
 		// check if Goal Node is found
 		if(minNode == goalNode){
-			cout << "Goal Found" << endl;
+			// cout << "Goal Found" << endl;
 			goalFound = true;
 			break;
 		}
@@ -2032,33 +2044,38 @@ bool map::DijkstrasSearch(std::vector<node> *graphNodes){
 
 
 	if(goalFound){
-		cout << "---------- Path Information  ----------" << endl;
+		if(outputPath){
+			// cout << "---------- Path Information  ----------" << endl;
+			// print path
+			int currentNode = goalNode;
 
-		// print path
-		int currentNode = goalNode;
+			ofstream PRM_Path("Ex_1_a_i_path.txt");
 
-		ofstream PRM_Path("Ex_1_a_i_path.txt");
+			while(currentNode != startNode){
+				PRM_Path << graphNodesCopy[currentNode].loc.x << ", " << graphNodesCopy[currentNode].loc.y << endl;
+				cout << currentNode << "<-" ;
+				currentNode = graphNodesCopy[currentNode].backpointer;
 
-		while(currentNode != startNode){
+			}
 			PRM_Path << graphNodesCopy[currentNode].loc.x << ", " << graphNodesCopy[currentNode].loc.y << endl;
-			cout << currentNode << "<-" ;
-			currentNode = graphNodesCopy[currentNode].backpointer;
+			PRM_Path.close();
 
+			cout << endl;
+			// cout << "Number of iterations: " << numberOfIterations << endl;
+			// cout << "Path Length: " << graphNodesCopy[goalNode].g << endl;
+			// cout << "---------------------------------------" << endl;
+
+			// cout << "            Dijkstra's Completed            " << endl;
 		}
-		PRM_Path << graphNodesCopy[currentNode].loc.x << ", " << graphNodesCopy[currentNode].loc.y << endl;
-		PRM_Path.close();
-
-		cout << endl;
-		cout << "Number of iterations: " << numberOfIterations << endl;
-		cout << "Path Length: " << graphNodesCopy[goalNode].g << endl;
-		cout << "---------------------------------------" << endl;
-
-		cout << "            Dijkstra's Completed            " << endl;
+		(*benchM).validSolution = 1;
+		(*benchM).pathLength = graphNodesCopy[goalNode].g;
 	}
 
 	else{
-		cout << "               PATH NOT FOUND               " << endl;
-		cout << "            Dijkstra's Completed            " << endl;
+		// cout << "               PATH NOT FOUND               " << endl;
+		// cout << "            Dijkstra's Completed            " << endl;
+		(*benchM).validSolution = 0;
+		(*benchM).pathLength = 0;
 	}
 
 
@@ -2072,7 +2089,12 @@ bool map::DijkstrasSearch(std::vector<node> *graphNodes){
 ////////////////////////////////////////////////////////////////////////////////
 // connects all edges and finds a path once all of the nodes are present in
 // the graph
-void map::PRM(int n, double r){
+PRM_Benchmark map::PRM(int n, double r, bool outputPath, bool outPutPRM){
+
+	PRM_Benchmark bm;
+
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
 
 	srand (time(NULL));
 	// xMapMin, xMapMax, yMapMin, yMapMax
@@ -2111,7 +2133,7 @@ void map::PRM(int n, double r){
 
 	}
 
-	cout << "Total Nodes: " << numberOfNodes << endl;
+	// cout << "Total Nodes: " << numberOfNodes << endl;
 
 
 	// connect the graph
@@ -2168,23 +2190,42 @@ void map::PRM(int n, double r){
 
 
 	// printGraph(&graphNodes);
+	// int validSolution; // 1 if valid solution with a pth, 0 if no path can be generated
+	// double pathLenght; // length of the path generated
+	// double compTime; 		// computation time of PRM
 
-	DijkstrasSearch(&graphNodes);
+	DijkstrasSearch(&graphNodes, outputPath, &bm);
+
 
 	// output PRM into a txt file
+	if (outPutPRM){
+		ofstream PRM_Graph("PRM_Graph_Ex_1_a_i.txt");
 
-	ofstream PRM_Graph("PRM_Graph_Ex_1_a_i.txt");
+		for(int i = 0 ; i < numberOfNodes; i++){
+			PRM_Graph << graphNodes[i].loc.x << ", " << graphNodes[i].loc.y;
+			for(const auto& adj_it : graphNodes[i].adjacencts){
 
-	for(int i = 0 ; i < numberOfNodes; i++){
-		PRM_Graph << graphNodes[i].loc.x << ", " << graphNodes[i].loc.y;
-		for(const auto& adj_it : graphNodes[i].adjacencts){
-
-				PRM_Graph << ", "<< graphNodes[adj_it].loc.x << ", " << graphNodes[adj_it].loc.y;
+					PRM_Graph << ", "<< graphNodes[adj_it].loc.x << ", " << graphNodes[adj_it].loc.y;
+			}
+			PRM_Graph << endl;
 		}
-		PRM_Graph << endl;
-	}
 
-	PRM_Graph.close();
+			PRM_Graph.close();
+
+		}
+
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+		// cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << " [s]" << std::endl;
+
+		bm.compTime = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+
+		// cout << "Benchmark Info" << endl;
+		// cout << "Path Found: " << bm.validSolution << endl;
+		// cout << "Path Lenght: " << bm.pathLength << endl;
+		// cout << "Computation Time: " << bm.compTime << " [micro sec]" << endl;
+
+		return bm;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

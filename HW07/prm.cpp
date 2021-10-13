@@ -101,23 +101,39 @@ int main()
 	// make a map object
 	map mapa(xLim, yLim, start, goal, obstacles);
 
-	mapa.PRM(200, 1);
-	// Sleep(1000);
-	// mapa.PRM(200, 0.5);
 
-	// use map object to check obstacle clollisions to build PRM
+	// file names
+	ofstream PRMBenchmarkFile_VS("PRM_Benchmark_validSol.txt"); // valid solutions
+	ofstream PRMBenchmarkFile_PL("PRM_Benchmark_pathLen.txt");	// path lengths
+	ofstream PRMBenchmarkFile_CT("PRM_Benchmark_compTime.txt"); // compile time
 
-	// go back and update the connections in the graph (find neighbors for each node)
-
-
-	// Use Graph class to do a graph search and find paths
+	int numNode[8] = {200,200,200,200,500,500,500,500};
+	double rad[8] = {0.5,1,1.5,2,0.5,1,1.5,2};
 
 
+	for(int j = 0; j<8 ;j++){
+		// cout << "n = " << numNode[j] << endl;
+		// cout << "r = " << rad[j] << endl;
+		for (int i = 0 ; i <100 ; i++){
 
-	// for loop that runs each imulation 100 times and collects benchmark data
+			PRM_Benchmark pm = mapa.PRM(numNode[j],rad[j], false,false);
 
+			PRMBenchmarkFile_VS << pm.validSolution << ", " ;
+			PRMBenchmarkFile_PL << pm.pathLength << ", " ;
+			PRMBenchmarkFile_CT << pm.compTime << "," ;
+			Sleep(1000);
+		}
 
+		PRMBenchmarkFile_VS << endl;
+		PRMBenchmarkFile_PL << endl;
+		PRMBenchmarkFile_CT << endl;
+	}
 
+	PRMBenchmarkFile_VS.close();
+	PRMBenchmarkFile_PL.close();
+	PRMBenchmarkFile_CT.close();
+
+	// PRM_Benchmark pm = mapa.PRM(1000,0.5, true,true);
 
 
 
