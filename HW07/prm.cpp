@@ -84,56 +84,353 @@ int main()
 {
 
 
-	//////////////////////////////////////////////////////////////////////////////
-	// Exercise 1 a)
+	// //////////////////////////////////////////////////////////////////////////////
+	// // Exercise 1 a)
+	// //
+	// //////////////////////////////////////////////////////////////////////////////
+	// // map limits
+	// std::tuple<double, double> xLim = std::make_tuple(-1,11);
+	// std::tuple<double, double> yLim = std::make_tuple(-3,3);
+	// // map start and goal
+	// std::tuple<double, double> start = std::make_tuple(0.0,0.0);
+	// std::tuple<double, double> goal = std::make_tuple(10.0,0.0);
+  //
+  //
+	// std::vector<polygon> obstacles = makeObstacles("obstacles_a.txt");
+  //
+	// // make a map object
+	// map mapa(xLim, yLim, start, goal, obstacles);
+  //
+	// // Benchmark Parameters
+	// int numNode[8] = {200,200,200,200,500,500,500,500};
+	// double rad[8] = {0.5,1,1.5,2,0.5,1,1.5,2};
+
+	// // file names
+	// ofstream PRMBenchmarkFile_VS("PRM_Benchmark_validSol.txt"); // valid solutions
+	// ofstream PRMBenchmarkFile_PL("PRM_Benchmark_pathLen.txt");	// path lengths
+	// ofstream PRMBenchmarkFile_CT("PRM_Benchmark_compTime.txt"); // compile time
 	//
-	//////////////////////////////////////////////////////////////////////////////
-	// map limits
-	std::tuple<double, double> xLim = std::make_tuple(-1,11);
-	std::tuple<double, double> yLim = std::make_tuple(-3,3);
-	// map start and goal
-	std::tuple<double, double> start = std::make_tuple(0.0,0.0);
-	std::tuple<double, double> goal = std::make_tuple(10.0,0.0);
+	//
+	//
+	// for(int j = 0; j<8 ;j++){
+	// 	// cout << "n = " << numNode[j] << endl;
+	// 	// cout << "r = " << rad[j] << endl;
+	// 	for (int i = 0 ; i <100 ; i++){
+	//
+	// 		PRM_Benchmark pm = mapa.PRM(numNode[j],rad[j], false,false,false);
+	//
+	// 		PRMBenchmarkFile_VS << pm.validSolution << ", " ;
+	// 		PRMBenchmarkFile_PL << pm.pathLength << ", " ;
+	// 		PRMBenchmarkFile_CT << pm.compTime << "," ;
+	// 		Sleep(1000);
+	// 	}
+	//
+	// 	PRMBenchmarkFile_VS << endl;
+	// 	PRMBenchmarkFile_PL << endl;
+	// 	PRMBenchmarkFile_CT << endl;
+	// }
+	//
+	// PRMBenchmarkFile_VS.close();
+	// PRMBenchmarkFile_PL.close();
+	// PRMBenchmarkFile_CT.close();
+	//
+	// // Debug
+	// PRM_Benchmark pm = mapa.PRM(200,1, true,true, true); //int n, double r, bool outputPath, bool outPutPRM, bool smooth
+
+	// /////////                SMOOTHING              ////////////////////////
+	// // file names
+	// ofstream PRMBenchmarkFile_VS_smooth("PRM_Benchmark_validSol_Smooth_Ex_1_a4.txt"); // valid solutions
+	// ofstream PRMBenchmarkFile_PL_smooth("PRM_Benchmark_pathLen_Smooth_Ex_1_a4.txt");	// path lengths
+	// ofstream PRMBenchmarkFile_CT_smooth("PRM_Benchmark_compTime_Smooth_Ex_1_a4.txt"); // compile time
+  //
+  //
+	// for(int j = 0; j<8 ;j++){
+	// 	// cout << "n = " << numNode[j] << endl;
+	// 	// cout << "r = " << rad[j] << endl;
+	// 	for (int i = 0 ; i <100 ; i++){
+  //
+	// 		PRM_Benchmark pm = mapa.PRM(numNode[j],rad[j], false,false,true);
+  //
+	// 		PRMBenchmarkFile_VS_smooth << pm.validSolution << ", " ;
+	// 		PRMBenchmarkFile_PL_smooth << pm.pathLength << ", " ;
+	// 		PRMBenchmarkFile_CT_smooth << pm.compTime << "," ;
+	// 		// Sleep(1000);
+	// 	}
+  //
+	// 	PRMBenchmarkFile_VS_smooth << endl;
+	// 	PRMBenchmarkFile_PL_smooth << endl;
+	// 	PRMBenchmarkFile_CT_smooth << endl;
+	// }
+  //
+	// PRMBenchmarkFile_VS_smooth.close();
+	// PRMBenchmarkFile_PL_smooth.close();
+	// PRMBenchmarkFile_CT_smooth.close();
 
 
-	std::vector<polygon> obstacles = makeObstacles("obstacles_a.txt");
 
-	// make a map object
-	map mapa(xLim, yLim, start, goal, obstacles);
+  //
+  // //////////////////////////////////////////////////////////////////////////////
+	// // Exercise 1 b) Workspace 1
+	// //
+	// //////////////////////////////////////////////////////////////////////////////
+	// // map limits
+	// std::tuple<double, double> xLim = std::make_tuple(-1,14);
+	// std::tuple<double, double> yLim = std::make_tuple(-1,14);
+	// // map start and goal
+	// std::tuple<double, double> start = std::make_tuple(0.0,0.0);
+	// std::tuple<double, double> goal = std::make_tuple(10.0,10.0);
+  //
+  //
+	// std::vector<polygon> obstacles = makeObstacles("obstacles_b.txt");
+  //
+	// // make a map object
+	// map mapa(xLim, yLim, start, goal, obstacles);
+  //
+	// // Benchmark Parameters
+	// int numNode[6] = {200,200,500,500,1000,1000};
+	// double rad[6] = {1.0,2.0,1.0,2.0,1.0,2.0};
+  //
+  // // PRM_Benchmark pm = mapa.PRM(200,2.0, true,true, false); //int n, double r, bool outputPath, bool outPutPRM, bool smooth
+  //
+	// // file names
+	// ofstream PRMBenchmarkFile_VS("PRM_Benchmark_validSol.txt"); // valid solutions
+	// ofstream PRMBenchmarkFile_PL("PRM_Benchmark_pathLen.txt");	// path lengths
+	// ofstream PRMBenchmarkFile_CT("PRM_Benchmark_compTime.txt"); // compile time
+  //
+  //
+  //
+	// for(int j = 0; j<6 ;j++){
+	// 	// cout << "n = " << numNode[j] << endl;
+	// 	// cout << "r = " << rad[j] << endl;
+	// 	for (int i = 0 ; i <100 ; i++){
+  //
+	// 		PRM_Benchmark pm = mapa.PRM(numNode[j],rad[j], false,false,false);
+  //
+	// 		PRMBenchmarkFile_VS << pm.validSolution << ", " ;
+	// 		PRMBenchmarkFile_PL << pm.pathLength << ", " ;
+	// 		PRMBenchmarkFile_CT << pm.compTime << "," ;
+	//		// Sleep(1000);
+	// 	}
+  //
+	// 	PRMBenchmarkFile_VS << endl;
+	// 	PRMBenchmarkFile_PL << endl;
+	// 	PRMBenchmarkFile_CT << endl;
+	// }
+  //
+	// PRMBenchmarkFile_VS.close();
+	// PRMBenchmarkFile_PL.close();
+	// PRMBenchmarkFile_CT.close();
+  //
+	// // Debug
+  //
+  //
+	// /////////                SMOOTHING              ////////////////////////
+	// // file names
+	// ofstream PRMBenchmarkFile_VS_smooth("PRM_Benchmark_validSol_Smooth.txt"); // valid solutions
+	// ofstream PRMBenchmarkFile_PL_smooth("PRM_Benchmark_pathLen_Smooth.txt");	// path lengths
+	// ofstream PRMBenchmarkFile_CT_smooth("PRM_Benchmark_compTime_Smooth.txt"); // compile time
+  //
+  //
+	// for(int j = 0; j<6 ;j++){
+	// 	// cout << "n = " << numNode[j] << endl;
+	// 	// cout << "r = " << rad[j] << endl;
+	// 	for (int i = 0 ; i <100 ; i++){
+  //
+	// 		PRM_Benchmark pm = mapa.PRM(numNode[j],rad[j], false,false,true);
+  //
+	// 		PRMBenchmarkFile_VS_smooth << pm.validSolution << ", " ;
+	// 		PRMBenchmarkFile_PL_smooth << pm.pathLength << ", " ;
+	// 		PRMBenchmarkFile_CT_smooth << pm.compTime << "," ;
+	// 		// Sleep(1000);
+	// 	}
+  //
+	// 	PRMBenchmarkFile_VS_smooth << endl;
+	// 	PRMBenchmarkFile_PL_smooth << endl;
+	// 	PRMBenchmarkFile_CT_smooth << endl;
+	// }
+  //
+	// PRMBenchmarkFile_VS_smooth.close();
+	// PRMBenchmarkFile_PL_smooth.close();
+	// PRMBenchmarkFile_CT_smooth.close();
+  //
+  //
+
+  // //////////////////////////////////////////////////////////////////////////////
+  // // Exercise 1 b) Workspace 2
+  // //
+  // //////////////////////////////////////////////////////////////////////////////
+  // // map limits
+  // std::tuple<double, double> xLim = std::make_tuple(-7,36);
+  // std::tuple<double, double> yLim = std::make_tuple(-7,7);
+  // // map start and goal
+  // std::tuple<double, double> start = std::make_tuple(0.0,0.0);
+  // std::tuple<double, double> goal = std::make_tuple(35.0,0.0);
+  //
+  //
+  // std::vector<polygon> obstacles = makeObstacles("obstacles_c.txt");
+  //
+  // // make a map object
+  // map mapa(xLim, yLim, start, goal, obstacles);
+  //
+  // // Benchmark Parameters
+  // int numNode[6] = {200,200,500,500,1000,1000};
+  // double rad[6] = {1.0,2.0,1.0,2.0,1.0,2.0};
+  // //
+  // PRM_Benchmark pm = mapa.PRM(1000,2.0, true,true, true); //int n, double r, bool outputPath, bool outPutPRM, bool smooth
+
+  // // file names
+  // ofstream PRMBenchmarkFile_VS("PRM_Benchmark_validSol.txt"); // valid solutions
+  // ofstream PRMBenchmarkFile_PL("PRM_Benchmark_pathLen.txt");	// path lengths
+  // ofstream PRMBenchmarkFile_CT("PRM_Benchmark_compTime.txt"); // compile time
+  //
+  //
+  //
+  // for(int j = 0; j<6 ;j++){
+  //   // cout << "n = " << numNode[j] << endl;
+  //   // cout << "r = " << rad[j] << endl;
+  //   for (int i = 0 ; i <100 ; i++){
+  //
+  //     PRM_Benchmark pm = mapa.PRM(numNode[j],rad[j], false,false,false);
+  //
+  //     PRMBenchmarkFile_VS << pm.validSolution << ", " ;
+  //     PRMBenchmarkFile_PL << pm.pathLength << ", " ;
+  //     PRMBenchmarkFile_CT << pm.compTime << "," ;
+  //     Sleep(1000);
+  //   }
+  //
+  //   PRMBenchmarkFile_VS << endl;
+  //   PRMBenchmarkFile_PL << endl;
+  //   PRMBenchmarkFile_CT << endl;
+  // }
+  //
+  // PRMBenchmarkFile_VS.close();
+  // PRMBenchmarkFile_PL.close();
+  // PRMBenchmarkFile_CT.close();
+  //
+  // // Debug
+  //
+  //
+  // /////////                SMOOTHING              ////////////////////////
+  // // file names
+  // ofstream PRMBenchmarkFile_VS_smooth("PRM_Benchmark_validSol_Smooth.txt"); // valid solutions
+  // ofstream PRMBenchmarkFile_PL_smooth("PRM_Benchmark_pathLen_Smooth.txt");	// path lengths
+  // ofstream PRMBenchmarkFile_CT_smooth("PRM_Benchmark_compTime_Smooth.txt"); // compile time
+  //
+  //
+  // for(int j = 0; j<6 ;j++){
+  //   // cout << "n = " << numNode[j] << endl;
+  //   // cout << "r = " << rad[j] << endl;
+  //   for (int i = 0 ; i <100 ; i++){
+  //
+  //     PRM_Benchmark pm = mapa.PRM(numNode[j],rad[j], false,false,true);
+  //
+  //     PRMBenchmarkFile_VS_smooth << pm.validSolution << ", " ;
+  //     PRMBenchmarkFile_PL_smooth << pm.pathLength << ", " ;
+  //     PRMBenchmarkFile_CT_smooth << pm.compTime << "," ;
+  //     // Sleep(1000);
+  //   }
+  //
+  //   PRMBenchmarkFile_VS_smooth << endl;
+  //   PRMBenchmarkFile_PL_smooth << endl;
+  //   PRMBenchmarkFile_CT_smooth << endl;
+  // }
+  //
+  // PRMBenchmarkFile_VS_smooth.close();
+  // PRMBenchmarkFile_PL_smooth.close();
+  // PRMBenchmarkFile_CT_smooth.close();
 
 
-	// file names
-	ofstream PRMBenchmarkFile_VS("PRM_Benchmark_validSol.txt"); // valid solutions
-	ofstream PRMBenchmarkFile_PL("PRM_Benchmark_pathLen.txt");	// path lengths
-	ofstream PRMBenchmarkFile_CT("PRM_Benchmark_compTime.txt"); // compile time
+  //
+  // //////////////////////////////////////////////////////////////////////////////
+  // // Exercise 2 a) worspace 1
+  // //
+  // //////////////////////////////////////////////////////////////////////////////
+	// // map limits
+	// std::tuple<double, double> xLim = std::make_tuple(-1,14);
+	// std::tuple<double, double> yLim = std::make_tuple(-1,14);
+	// // map start and goal
+	// std::tuple<double, double> start = std::make_tuple(0.0,0.0);
+	// std::tuple<double, double> goal = std::make_tuple(10.0,10.0);
+  //
+  //
+	// std::vector<polygon> obstacles = makeObstacles("obstacles_b.txt");
+  //
+	// // make a map object
+	// map mapa(xLim, yLim, start, goal, obstacles);
+  // //
+  // // PRM_Benchmark pm = mapa.GoalBiasRRT(5000, 0.5 ,0.05,0.25, true, true);
+  //
+  // // Exercise 2 b) Worspace 1 //////////////////////////////////////////////////
+  // // file names
+  // ofstream PRMBenchmarkFile_VS("Tree_Benchmark_validSol.txt"); // valid solutions
+  // ofstream PRMBenchmarkFile_PL("Tree_Benchmark_pathLen.txt");	// path lengths
+  // ofstream PRMBenchmarkFile_CT("Tree_Benchmark_compTime.txt"); // compile time
+  //
+  //
+  //
+  // for (int i = 0 ; i <100 ; i++){
+  //
+  // 		PRM_Benchmark pm = mapa.GoalBiasRRT(5000, 0.5 ,0.05,0.25, false, false);
+  //
+  // 		PRMBenchmarkFile_VS << pm.validSolution << ", " ;
+  // 		PRMBenchmarkFile_PL << pm.pathLength << ", " ;
+  // 		PRMBenchmarkFile_CT << pm.compTime << "," ;
+  // 		// Sleep(1000);
+  // }
+  //
+	// PRMBenchmarkFile_VS << endl;
+	// PRMBenchmarkFile_PL << endl;
+	// PRMBenchmarkFile_CT << endl;
+  //
+  // PRMBenchmarkFile_VS.close();
+  // PRMBenchmarkFile_PL.close();
+  // PRMBenchmarkFile_CT.close();
 
-	int numNode[8] = {200,200,200,200,500,500,500,500};
-	double rad[8] = {0.5,1,1.5,2,0.5,1,1.5,2};
+  /////////////////////////////////////////////////////////////////////////////
+  // Exercise 2 a) worspace 2
+  //
+  //////////////////////////////////////////////////////////////////////////////
+  // map limits
+  std::tuple<double, double> xLim = std::make_tuple(-7,36);
+  std::tuple<double, double> yLim = std::make_tuple(-7,7);
+  // map start and goal
+  std::tuple<double, double> start = std::make_tuple(0.0,0.0);
+  std::tuple<double, double> goal = std::make_tuple(35.0,0.0);
 
 
-	for(int j = 0; j<8 ;j++){
-		// cout << "n = " << numNode[j] << endl;
-		// cout << "r = " << rad[j] << endl;
-		for (int i = 0 ; i <100 ; i++){
+  std::vector<polygon> obstacles = makeObstacles("obstacles_c.txt");
 
-			PRM_Benchmark pm = mapa.PRM(numNode[j],rad[j], false,false);
+  // make a map object
+  map mapa(xLim, yLim, start, goal, obstacles);
 
-			PRMBenchmarkFile_VS << pm.validSolution << ", " ;
-			PRMBenchmarkFile_PL << pm.pathLength << ", " ;
-			PRMBenchmarkFile_CT << pm.compTime << "," ;
-			Sleep(1000);
-		}
 
-		PRMBenchmarkFile_VS << endl;
-		PRMBenchmarkFile_PL << endl;
-		PRMBenchmarkFile_CT << endl;
-	}
+  // PRM_Benchmark pm = mapa.GoalBiasRRT(5000, 0.5 ,0.05,0.25, true, true);
+  // Exercise 2 b) Worspace 2 //////////////////////////////////////////////////
+  // file names
+  ofstream PRMBenchmarkFile_VS("Tree_Benchmark_validSol.txt"); // valid solutions
+  ofstream PRMBenchmarkFile_PL("Tree_Benchmark_pathLen.txt");	// path lengths
+  ofstream PRMBenchmarkFile_CT("Tree_Benchmark_compTime.txt"); // compile time
 
-	PRMBenchmarkFile_VS.close();
-	PRMBenchmarkFile_PL.close();
-	PRMBenchmarkFile_CT.close();
 
-	// PRM_Benchmark pm = mapa.PRM(1000,0.5, true,true);
+
+  for (int i = 0 ; i <100 ; i++){
+
+  		PRM_Benchmark pm = mapa.GoalBiasRRT(5000, 0.5 ,0.05,0.25, false, false);
+
+  		PRMBenchmarkFile_VS << pm.validSolution << ", " ;
+  		PRMBenchmarkFile_PL << pm.pathLength << ", " ;
+  		PRMBenchmarkFile_CT << pm.compTime << "," ;
+  		// Sleep(1000);
+  }
+
+	PRMBenchmarkFile_VS << endl;
+	PRMBenchmarkFile_PL << endl;
+	PRMBenchmarkFile_CT << endl;
+
+  PRMBenchmarkFile_VS.close();
+  PRMBenchmarkFile_PL.close();
+  PRMBenchmarkFile_CT.close();
+
 
 
 

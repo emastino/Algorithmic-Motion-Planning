@@ -15,6 +15,8 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <chrono>				// time delay and measure elapsed time
+#include <random>
+
 
 #include "Eigen/Dense"
 
@@ -130,8 +132,12 @@ class map {
 	// PRMs and Graphs
 	void addNode(int, vertex, std::vector<node>*);
 	void AstarSearch(std::vector<node> *);
-	bool DijkstrasSearch(std::vector<node> *,bool ,PRM_Benchmark *);
-	PRM_Benchmark PRM(int, double,bool, bool);
+	bool DijkstrasSearch(std::vector<node> *,bool ,bool,PRM_Benchmark *);
+	PRM_Benchmark PRM(int, double,bool, bool, bool);
+
+	PRM_Benchmark GoalBiasRRT(int,double,double,double, bool, bool);
+
+
 	void printGraph(std::vector<node> *);
 
 
@@ -1810,8 +1816,6 @@ void map::wavefrontPathCSpace(string filename,std::vector<std::vector<cell>> c_g
 }
 
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 //  addANode
 ////////////////////////////////////////////////////////////////////////////////
@@ -1950,7 +1954,7 @@ void map::AstarSearch(std::vector<node> *graphNodes){
 // Dijkstra's Search
 ////////////////////////////////////////////////////////////////////////////////
 
-bool map::DijkstrasSearch(std::vector<node> *graphNodes,bool outputPath, PRM_Benchmark *benchM){
+bool map::DijkstrasSearch(std::vector<node> *graphNodes,bool outputPath, bool smoothing, PRM_Benchmark *benchM){
 
 	bool goalFound = false;
 
@@ -2043,32 +2047,125 @@ bool map::DijkstrasSearch(std::vector<node> *graphNodes,bool outputPath, PRM_Ben
 	}
 
 
-	if(goalFound){
-		if(outputPath){
-			// cout << "---------- Path Information  ----------" << endl;
-			// print path
-			int currentNode = goalNode;
+	if(goalFound){ // if goal was found
+		// reverse the order of the list to get better smooting performance
 
-			ofstream PRM_Path("Ex_1_a_i_path.txt");
+		// no smoothing
+		if(!smoothing){ // output path to file and no smoothing
+			std::vector<int> pathNodeNumbers;
+			int currentNode = goalNode;
+			pathNodeNumbers.push_back(currentNode);
 
 			while(currentNode != startNode){
-				PRM_Path << graphNodesCopy[currentNode].loc.x << ", " << graphNodesCopy[currentNode].loc.y << endl;
-				cout << currentNode << "<-" ;
 				currentNode = graphNodesCopy[currentNode].backpointer;
+				pathNodeNumbers.push_back(currentNode);
 
 			}
-			PRM_Path << graphNodesCopy[currentNode].loc.x << ", " << graphNodesCopy[currentNode].loc.y << endl;
-			PRM_Path.close();
 
-			cout << endl;
-			// cout << "Number of iterations: " << numberOfIterations << endl;
-			// cout << "Path Length: " << graphNodesCopy[goalNode].g << endl;
-			// cout << "---------------------------------------" << endl;
+			// for outputPath no smoothing
+			(*benchM).validSolution = 1;
+			(*benchM).pathLength = graphNodesCopy[goalNode].g;
 
-			// cout << "            Dijkstra's Completed            " << endl;
+			// cout << "UNsmooth Distance = " << (*benchM).pathLength << endl;
+
+			pathNodeNumbers.resize(pathNodeNumbers.size());
+
+			if(outputPath){
+				ofstream PRM_Path("PRM_Path.txt");
+				while(pathNodeNumbers.size()>0){
+					PRM_Path << graphNodesCopy[pathNodeNumbers.back()].loc.x << ", " << graphNodesCopy[pathNodeNumbers.back()].loc.y << endl;
+					pathNodeNumbers.pop_back();
+				}
+				PRM_Path.close();
+			}
 		}
-		(*benchM).validSolution = 1;
-		(*benchM).pathLength = graphNodesCopy[goalNode].g;
+
+		// smoothing
+		// else{
+		else{
+			// cout << "---------- Path Information  ----------" << endl;
+			std::vector<node> orderedPathVector;
+
+			int currentNodeIndex = goalNode;
+			int tempIndex;
+
+			orderedPathVector.push_back(graphNodesCopy[currentNodeIndex]);
+
+			node tempNode;
+
+			while(currentNodeIndex != startNode){
+				tempIndex = currentNodeIndex;
+				currentNodeIndex = graphNodesCopy[currentNodeIndex].backpointer;
+				tempNode = graphNodesCopy[currentNodeIndex];
+				tempNode.backpointer = tempIndex;
+				orderedPathVector.push_back(tempNode);
+			}
+			tempNode = graphNodesCopy[currentNodeIndex];
+			tempNode.backpointer = tempIndex;
+			orderedPathVector.push_back(tempNode);
+
+			orderedPathVector.resize(orderedPathVector.size());
+
+			std::vector<int> pathNodeNumbers;
+			int currentNode = startNode;
+			int nextNode, prevNextNode;
+			double smoothDistance = 0;
+			// pathNodeNumbers.push_front(currentNode);
+			pathNodeNumbers.push_back(currentNode);
+
+			// initialize
+			nextNode = orderedPathVector.back().backpointer;
+			prevNextNode = nextNode;
+
+			while(nextNode != goalNode){
+
+				if( lineCollision(graphNodesCopy[currentNode].loc,  graphNodesCopy[nextNode].loc) ){
+					smoothDistance = smoothDistance + dist(graphNodesCopy[currentNode].loc, graphNodesCopy[prevNextNode].loc);
+					currentNode = prevNextNode;
+					pathNodeNumbers.push_back(currentNode);
+				}
+				else{
+					orderedPathVector.pop_back();
+					prevNextNode = nextNode;
+					nextNode = orderedPathVector.back().backpointer;
+				}
+
+				// if next node == startNode
+				if(nextNode == goalNode){
+
+					if( lineCollision(graphNodesCopy[currentNode].loc,  graphNodesCopy[nextNode].loc) ){
+						smoothDistance = smoothDistance + dist(graphNodesCopy[currentNode].loc, graphNodesCopy[prevNextNode].loc);
+						currentNode = prevNextNode;
+						pathNodeNumbers.push_back(currentNode);
+						pathNodeNumbers.push_back(goalNode);
+					}
+					else{
+						smoothDistance = smoothDistance + dist(graphNodesCopy[currentNode].loc, graphNodesCopy[goalNode].loc);
+						currentNode = goalNode;
+						pathNodeNumbers.push_back(goalNode);
+					}
+				}
+
+			}
+
+			// for outputPath no smoothing
+			(*benchM).validSolution = 1;
+			(*benchM).pathLength = smoothDistance;
+			// cout << "Smooth Distance = " << (*benchM).pathLength << endl;
+
+			pathNodeNumbers.resize(pathNodeNumbers.size());
+
+			if(outputPath){
+				if(smoothing){
+					ofstream PRM_Path("PRM_Path_Smooth.txt");
+					while(pathNodeNumbers.size()>0){
+						PRM_Path << graphNodesCopy[pathNodeNumbers.back()].loc.x << ", " << graphNodesCopy[pathNodeNumbers.back()].loc.y << endl;
+						pathNodeNumbers.pop_back();
+					}
+					PRM_Path.close();
+				}
+			}
+		}
 	}
 
 	else{
@@ -2085,18 +2182,21 @@ bool map::DijkstrasSearch(std::vector<node> *graphNodes,bool outputPath, PRM_Ben
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Make PRM
+// PRM()
 ////////////////////////////////////////////////////////////////////////////////
 // connects all edges and finds a path once all of the nodes are present in
 // the graph
-PRM_Benchmark map::PRM(int n, double r, bool outputPath, bool outPutPRM){
+PRM_Benchmark map::PRM(int n, double r, bool outputPath, bool outPutPRM, bool smooth){
 
 	PRM_Benchmark bm;
 
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
 
-	srand (time(NULL));
+	// random
+	unsigned seedX = std::chrono::steady_clock::now().time_since_epoch().count();
+	// cout << seedX << endl;
+	srand (seedX);
 	// xMapMin, xMapMax, yMapMin, yMapMax
 	std::vector<node> graphNodes;
 
@@ -2119,12 +2219,17 @@ PRM_Benchmark map::PRM(int n, double r, bool outputPath, bool outPutPRM){
 
 		temp.x = (double) rand()*(xMapMax-xMapMin)/RAND_MAX +xMapMin; //(xMapMin-xMapMax) + xMapMin;
 		temp.y = (double) rand()*(yMapMax-yMapMin)/RAND_MAX +yMapMin; //(yMapMin-yMapMax) + yMapMin;
-
+		// temp.x = randomX ;//(double) rand()*(xMapMax-xMapMin)/RAND_MAX +xMapMin; //(xMapMin-xMapMax) + xMapMin;
+	  // temp.y = randomY ;//(double) rand()*(yMapMax-yMapMin)/RAND_MAX +yMapMin; //(yMapMin-yMapMax) + yMapMin;
 		// cout << "random location in map:  " << temp.x << ", " << temp.y << endl;
 
 		if(!pointCollision(temp)){
 			addNode(numberOfNodes,temp, &graphNodes);
+
+			// cout << "No Collision. Added node #" <<  numberOfNodes << endl;
+
 			numberOfNodes++;
+
 		}
 		else{
 			// cout << "Collision: " << temp.x << ", " << temp.y << endl;
@@ -2182,6 +2287,7 @@ PRM_Benchmark map::PRM(int n, double r, bool outputPath, bool outPutPRM){
 		}
 	}
 
+
 	// resize all of the wights and adjacent vectors
 	for(int i = 0 ; i < numberOfNodes; i++){
 		graphNodes[i].adjacencts.resize(graphNodes[i].adjacencts.size());
@@ -2194,12 +2300,12 @@ PRM_Benchmark map::PRM(int n, double r, bool outputPath, bool outPutPRM){
 	// double pathLenght; // length of the path generated
 	// double compTime; 		// computation time of PRM
 
-	DijkstrasSearch(&graphNodes, outputPath, &bm);
+	DijkstrasSearch(&graphNodes, outputPath, smooth, &bm);
 
 
 	// output PRM into a txt file
 	if (outPutPRM){
-		ofstream PRM_Graph("PRM_Graph_Ex_1_a_i.txt");
+		ofstream PRM_Graph("PRM_Graph.txt");
 
 		for(int i = 0 ; i < numberOfNodes; i++){
 			PRM_Graph << graphNodes[i].loc.x << ", " << graphNodes[i].loc.y;
@@ -2228,6 +2334,205 @@ PRM_Benchmark map::PRM(int n, double r, bool outputPath, bool outPutPRM){
 		return bm;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// RRT()
+////////////////////////////////////////////////////////////////////////////////
+// make an RRT biased to goal with prob p
+
+PRM_Benchmark map::GoalBiasRRT(int n,double r,double p,double epsilon, bool outputPath, bool outPutTree){
+
+	PRM_Benchmark bm;
+	bm.validSolution = 0;
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+
+	// random
+	unsigned seedX = std::chrono::steady_clock::now().time_since_epoch().count();
+	// cout << seedX << endl;
+	srand (seedX);
+
+	// xMapMin, xMapMax, yMapMin, yMapMax
+	std::vector<node> treeNodes;
+
+	// add start node ROOT
+	vertex startNodeLocation;
+	startNodeLocation.x = sx; startNodeLocation.y = sy;
+	addNode(0, startNodeLocation, &treeNodes);
+	int numberOfNodes = 1;
+
+	vertex goalNodeLocation;
+	goalNodeLocation.x = gx; goalNodeLocation.y = gy;
+	// min distance  and initialize
+	double minDistanceTree = sqrt((pow(xMapMax-xMapMin,2.0) +  pow(yMapMax-yMapMin,2.0)));
+
+	bool goalFound = false;
+
+	// start at 2 because we have already added the start and goal nodes
+	for( int i = 0; i < n; i++){
+		vertex temp;
+		double randomNum = (double) rand()/RAND_MAX;
+		if(randomNum <= p){
+			temp.x = gx;
+			temp.y = gy;
+		}
+		else{
+			temp.x = (double) rand()*(xMapMax-xMapMin)/RAND_MAX +xMapMin; //(xMapMin-xMapMax) + xMapMin;
+			temp.y = (double) rand()*(yMapMax-yMapMin)/RAND_MAX +yMapMin; //(yMapMin-yMapMax) + yMapMin;
+		}
+		// cout << "q_rand: " << temp.x << ", " << temp.y << endl;
+
+		node minNode;
+		// find min node to
+		for(const auto& tree_it: treeNodes){
+			// cout << "Looking at Node #" << tree_it.graph_number << " at location " << tree_it.loc.x << ", " << tree_it.loc.y << endl;
+
+			if(dist(tree_it.loc,temp)<minDistanceTree){
+				minDistanceTree = dist(tree_it.loc,temp);
+				minNode = tree_it;
+			}
+		}
+
+		// cout << "nearest node: " << minNode.graph_number << " at location " << minNode.loc.x << ", " << minNode.loc.y << endl;
+
+
+		vertex newLoc;
+		if(dist(minNode.loc, temp) <=r){
+			// new location is temp if it is less than r distance away
+			newLoc = temp;
+		}
+		else{
+			// see if node can be epsilon away
+			double theta = atan2(temp.y-minNode.loc.y,temp.x-minNode.loc.x );
+			// position of new node
+			newLoc.x = r*cos(theta)+ minNode.loc.x;
+			newLoc.y = r*sin(theta)+ minNode.loc.y;
+		}
+
+
+		// check if subpath has no intersections
+
+		if(!lineCollision(newLoc,minNode.loc)){
+			node newNode;
+			newNode.backpointer = minNode.graph_number;
+			newNode.loc = newLoc;
+			newNode.graph_number = numberOfNodes;
+			treeNodes.push_back(newNode);
+			numberOfNodes++;
+
+			if(dist(newNode.loc, goalNodeLocation)<= epsilon){
+				node goaln;
+				goaln.backpointer = newNode.graph_number;
+				goaln.loc = goalNodeLocation;
+				goaln.graph_number = numberOfNodes;
+				treeNodes.push_back(goaln);
+				goalFound = true;
+				numberOfNodes++;
+				// cout << "Goal Found" << endl;
+				i = i+n;
+			}
+
+
+		}
+
+		minDistanceTree = sqrt((pow(xMapMax-xMapMin,2.0) +  pow(yMapMax-yMapMin,2.0)));
+	}
+
+	// cout << "Total Nodes: " << numberOfNodes << endl;
+
+	// resize graph
+	treeNodes.resize(numberOfNodes);
+
+	double treePathDist = 0;
+
+	if(goalFound){
+		bm.validSolution = 1;
+		// vector storing path info
+		std::vector<node> treePath;
+		int currentIndex = numberOfNodes-1;
+
+
+		while(treeNodes[currentIndex].backpointer != 0){
+			treePath.push_back(treeNodes[currentIndex ]);
+
+			treePathDist = treePathDist + dist(treeNodes[currentIndex ].loc, treeNodes[treeNodes[currentIndex ].backpointer].loc);
+
+			currentIndex = treeNodes[currentIndex ].backpointer;
+
+			// Tree_Path << treeNodes[currentIndex].loc.x << ", " << treeNodes[currentIndex].loc.y ;
+			// Tree_Path << treeNodes[treeNodes[currentIndex].backpointer].loc.x << ", " << treeNodes[treeNodes[currentIndex].backpointer].loc.y ;
+			// Tree_Path << endl;
+		}
+		treePathDist = treePathDist + dist(treeNodes[currentIndex ].loc, treeNodes[treeNodes[currentIndex ].backpointer].loc);
+		treePath.push_back(treeNodes[currentIndex ]);
+
+		// cout << "Path Distance = " << treePathDist << endl;
+
+		if (outputPath){
+			ofstream Tree_Path("Tree_Path.txt");
+			int currentIndex = numberOfNodes-1;
+			while(currentIndex != 0){
+
+				Tree_Path << treeNodes[currentIndex].loc.x << ", " << treeNodes[currentIndex].loc.y << endl;
+				// Tree_Path << treeNodes[treeNodes[currentIndex].backpointer].loc.x << ", " << treeNodes[treeNodes[currentIndex].backpointer].loc.y ;
+
+				currentIndex = treeNodes[currentIndex].backpointer;
+			}
+			Tree_Path << treeNodes[currentIndex].loc.x << ", " << treeNodes[currentIndex].loc.y << endl ;
+
+			Tree_Path.close();
+
+			}
+
+
+	}
+
+	// output PRM into a txt file
+	if (outPutTree){
+		ofstream Tree("Tree.txt");
+
+		for(int i = 1; i < numberOfNodes; i++){
+			// cout  << treeNodes[i].loc.x << ", " << treeNodes[i].loc.y << ", " ;
+			// cout << treeNodes[treeNodes[i].backpointer].loc.x << ", " << treeNodes[treeNodes[i].backpointer].loc.y ;
+			// cout << endl;
+			Tree << treeNodes[i].loc.x << ", " << treeNodes[i].loc.y << ", " ;
+			Tree << treeNodes[treeNodes[i].backpointer].loc.x << ", " << treeNodes[treeNodes[i].backpointer].loc.y ;
+			Tree << endl;
+		}
+
+			Tree.close();
+
+	}
+	// // resize all of the wights and adjacent vectors
+	// for(int i = 0 ; i < numberOfNodes; i++){
+	// 	treeNodes[i].adjacencts.resize(graphNodes[i].adjacencts.size());
+	// 	treeNodes[i].weights.resize(graphNodes[i].weights.size());
+	// }
+
+	//
+	// printGraph(&graphNodes);
+	// int validSolution; // 1 if valid solution with a pth, 0 if no path can be generated
+	// double pathLenght; // length of the path generated
+	// double compTime; 		// computation time of PRM
+	//
+
+
+
+	//
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+		// cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << " [s]" << std::endl;
+		bm.pathLength = treePathDist;
+
+		bm.compTime = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+
+		// cout << "Benchmark Info" << endl;
+		// cout << "Path Found: " << bm.validSolution << endl;
+		// cout << "Path Lenght: " << bm.pathLength << endl;
+		// cout << "Computation Time: " << bm.compTime << " [micro sec]" << endl;
+		//
+		return bm;
+}
 ////////////////////////////////////////////////////////////////////////////////
 //  printGraph()
 ////////////////////////////////////////////////////////////////////////////////
