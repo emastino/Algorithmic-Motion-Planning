@@ -61,10 +61,10 @@ struct node{
 	std::vector<int> adjacencts; // adjacent nodes
 	std::vector<double> weights; // distance from one node to another
 
-	int timeStamp;
-
 	int backpointer; // used for search algorithms to point to it backpointer/parent
 									// node in the contect of the graph
+
+	int timeStamp;
 };
 
 // structure to store PRM benchmark data for each run
@@ -150,6 +150,7 @@ class map {
 	PRM_Benchmark PRM(int, double,bool, bool, bool);
 	PRM_Benchmark GoalBiasRRT(int,double,double,double, bool, bool);
 	PRM_Benchmark GoalBiasRRT_Centralized(int,double,double,double, bool, bool, int);
+	PRM_Benchmark GoalBiasRRT_Decentralized(int,double,double,double, bool, bool, int);
 	void addRobots(std::vector<robot>);
 	double minDistanceToAllObs(vertex);
 	void printGraph(std::vector<node> *);
@@ -2587,10 +2588,8 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 
 		tempNode.graph_number = 0;
 		tempNode.loc = robots[i].start;
-		tempNode.timeStamp = 0;
 		robotsCopy[i].start_index = 0;
 		robotsTree[i].push_back(tempNode);
-
 	}
 
 	// number of nodes per tree
@@ -2604,7 +2603,7 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 
 	// number of robots at goal
 	int atGoalCounter = 0;
-
+	int atGoalIndexGlobal;
 	// try to make n nodes..... //////////////////////////////////////////////////
 	for(int i = 0; i < n ; i++){
 
@@ -2626,8 +2625,14 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 			for(int j = 0; j < numOfRobs; j++){
 				vertex temp;
 				// random location...need to add bias later
-				temp.x = robotsCopy[j].goal.x; //(xMapMin-xMapMax) + xMapMin;
-				temp.y = robotsCopy[j].goal.y; //(yMapMin-yMapMax) + yMapMin;
+				if(robotsCopy[j].atGoal){
+					temp = robotsCopy[j].goal;
+				}
+				else{
+					temp.x = robotsCopy[j].goal.x; //(xMapMin-xMapMax) + xMapMin;
+					temp.y = robotsCopy[j].goal.y; //(yMapMin-yMapMax) + yMapMin;
+				}
+
 
 				// node with min distance to q_rand
 				configurationVectorTemp[j] = temp;
@@ -2638,9 +2643,13 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 			for(int j = 0; j < numOfRobs; j++){
 				vertex temp;
 				// random location...need to add bias later
-				temp.x = (double) rand()*(xMapMax-xMapMin)/RAND_MAX +xMapMin; //(xMapMin-xMapMax) + xMapMin;
-				temp.y = (double) rand()*(yMapMax-yMapMin)/RAND_MAX +yMapMin; //(yMapMin-yMapMax) + yMapMin;
-
+				if(robotsCopy[j].atGoal){
+					temp = robotsCopy[j].goal;
+				}
+				else{
+					temp.x = (double) rand()*(xMapMax-xMapMin)/RAND_MAX +xMapMin; //(xMapMin-xMapMax) + xMapMin;
+					temp.y = (double) rand()*(yMapMax-yMapMin)/RAND_MAX +yMapMin; //(yMapMin-yMapMax) + yMapMin;
+				}
 				// node with min distance to q_rand
 				configurationVectorTemp[j] = temp;
 
@@ -2673,8 +2682,6 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 		// cout << "Min Index = " << minIndex << endl;
 		// calculate the location of node r distance away for each robot
 		// see if node can be epsilon away
-		std::vector<node> tempBotNodes;
-		tempBotNodes.resize(numOfRobs);
 
 		for(int j = 0 ; j < numOfRobs; j++){
 			vertex newLoc;
@@ -2690,18 +2697,11 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 
 			double theta = atan2(temp.y-minNode.loc.y,temp.x-minNode.loc.x );
 			// position of new node
-			newLoc.x = r*cos(theta)+ minNode.loc.x;
-			newLoc.y = r*sin(theta)+ minNode.loc.y;
+			newLoc.x = r*cos(theta)/sqrt(numOfRobs) + minNode.loc.x;
+			newLoc.y = r*sin(theta)/sqrt(numOfRobs) + minNode.loc.y;
 
 
 			configurationVectorTemp[j] = newLoc;
-
-			tempBotNodes[j].loc = configurationVectorTemp[j];
-			tempBotNodes[j].timeStamp = robotsTree[j][minIndex].timeStamp+1;
-
-			cout << "Parent Time Stamp: " << robotsTree[j][minIndex].timeStamp << endl;
-			cout << "Childs Time Stamp: " << tempBotNodes[j].timeStamp <<endl;
-
 			// cout << "New Location: " << configurationVectorTemp[j].x <<", " << configurationVectorTemp[j].y << endl;
 			// cout << "Check 1" << endl;
 		}
@@ -2712,10 +2712,10 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 		for (int j = 0 ; j < numOfRobs; j++){
 			// cout << "Check 2" << endl;
 			// obstacles
-			if(minDistanceToAllObs(configurationVectorTemp[j]) < robotsCopy[j].R){
-				noCollision = false;
-				// cout << "Obstacle Collision" << endl;
-			}
+			// if(minDistanceToAllObs(configurationVectorTemp[j]) < robotsCopy[j].R){
+			// 	noCollision = false;
+			// 	// cout << "Obstacle Collision" << endl;
+			// }
 
 
 			// Make a polygon from the circular robots path
@@ -2756,24 +2756,45 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 
 
 			// check robot-robot collision at this time step
+			int numOfSteps = 10;
+
 			for(int q = 0 ; q < numOfRobs; q++){
-				if(q != j && tempBotNodes[j].timeStamp == tempBotNodes[q].timeStamp){
+
+				if(q != j){
 					double Max_Robot_Robot_Dist = robotsCopy[j].R + robotsCopy[q].R ;
-					// cout << "Distance Between Bots" << dist(configurationVectorTemp[j], configurationVectorTemp[q]) << endl;
-					// cout << "Max Distance between bots " << Max_Robot_Robot_Dist << endl;
-					if(dist(configurationVectorTemp[j], configurationVectorTemp[q]) <= Max_Robot_Robot_Dist){//robots[j].R+robots[q].R
-						noCollision = false;
-						// cout << "Robot Collision" << endl;
+
+
+					vertex loc1, loc2;
+
+					for(int r = 0; r <= numOfSteps; r++ ){
+
+						loc1.x = configurationVectorTemp[j].x + r*(configurationVectorTemp[j].x - robotsTree[j][minIndex].loc.x)/numOfSteps;
+						loc1.y = configurationVectorTemp[j].y + r*(configurationVectorTemp[j].y - robotsTree[j][minIndex].loc.y)/numOfSteps;
+
+						loc2.x = configurationVectorTemp[q].x + r*(configurationVectorTemp[q].x - robotsTree[q][minIndex].loc.x)/numOfSteps;
+						loc2.y = configurationVectorTemp[q].y + r*(configurationVectorTemp[q].y - robotsTree[q][minIndex].loc.y)/numOfSteps;
+
+
+						if(dist(loc1, loc2) <= Max_Robot_Robot_Dist){//robots[j].R+robots[q].R
+							// cout << "Distance Between Bots" << dist(loc1, loc2) << endl;
+							// cout << "Max Distance between bots " << Max_Robot_Robot_Dist << endl;
+							noCollision = false;
+							// cout << "Robot Collision" << endl;
+						}
+
+
+
+
 					}
+
 				}
 			}
-
 
 			// check for temproral robot collision; each node will have a time step
 			// based on its parents time step
 			// Actually can check in real time as long as you update time stamp of
 			// node in the above steps, you can check in the robot collsision function if
-			// they have the same time step
+
 
 
 
@@ -2790,22 +2811,45 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 
 
 				node tempNode;
-				tempNode.graph_number = numberOfNodes;
+				// tempNode.graph_number = numberOfNodes;
 				tempNode.loc = configurationVectorTemp[j];
-				tempNode.backpointer = minIndex;
-				tempNode.timeStamp = tempBotNodes[j].timeStamp;
+				// tempNode.backpointer = minIndex;
 
-
-
-				if(dist(tempNode.loc, robotsCopy[j].goal)<epsilon && !robotsCopy[j].atGoal){
-					robotsCopy[j].goal_index = tempNode.graph_number;
-					robotsCopy[j].atGoal = true;
-					tempNode.loc = robotsCopy[j].goal;
-				}
+				// ------------------------------------------------------
 
 				if(robotsCopy[j].atGoal){
+					// cout << "Robot" << j << " found goal" << endl;
+					// tempNode.loc = robotsCopy[j].goal;
+					// tempNode.graph_number = numberOfNodes;
+					// tempNode.backpointer = minIndex;
+					// robotsCopy[j].goal_index = tempNode.graph_number;
 					atGoalCounter++;
 				}
+				else if( dist(tempNode.loc, robotsCopy[j].goal)<epsilon){
+					tempNode.graph_number = numberOfNodes;
+					tempNode.loc = robotsCopy[j].goal;
+					tempNode.backpointer = minIndex;
+					robotsCopy[j].goal_index = tempNode.graph_number;
+					robotsCopy[j].atGoal = true;
+				}
+				else{
+					tempNode.graph_number = numberOfNodes;
+					tempNode.loc = configurationVectorTemp[j];
+					tempNode.backpointer = minIndex;
+				}
+
+				// -------------------------------------------------------
+
+
+				// if(dist(tempNode.loc, robotsCopy[j].goal)<epsilon && !robotsCopy[j].atGoal){
+				// 	robotsCopy[j].goal_index = tempNode.graph_number;
+				// 	robotsCopy[j].atGoal = true;
+				// 	tempNode.loc = robotsCopy[j].goal;
+				// }
+				//
+				// if(robotsCopy[j].atGoal){
+				// 	atGoalCounter++;
+				// }
 
 				robotsTree[j].push_back(tempNode);
 			}
@@ -2814,7 +2858,8 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 			robotsTree.resize(numOfRobs, vector<node>(numberOfNodes));
 
 			if(atGoalCounter == numOfRobs){
-				cout << "FOUND GOAL" << endl;
+				// cout << "FOUND GOAL" << endl;
+
 				i = 2*n;
 			} // terminate loop
 			// cout << "New Size of vector: " << robotsTree.size() << " x " << robotsTree[0].size() << endl;
@@ -2847,24 +2892,25 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 		trees.close();
 	}
 
-	if(outputPath){
-		// cout << "Make Path" << endl;
-		ofstream treesPath("Trees_Path.txt");
-		for(int j = 0; j < numOfRobs; j++){
-			node currentNode = robotsTree[j][robotsCopy[j].goal_index];
-			while(currentNode.graph_number != robotsCopy[j].start_index){
-				treesPath << currentNode.loc.x << ", " << currentNode.loc.y << ", ";
-				currentNode = robotsTree[j][currentNode.backpointer];
+	if(atGoalCounter == numOfRobs){
+		if(outputPath){
+			// cout << "Make Path" << endl;
+			ofstream treesPath("Trees_Path.txt");
+			for(int j = 0; j < numOfRobs; j++){
+				node currentNode = robotsTree[j][numberOfNodes-1] ; //robotsTree[j][robotsCopy[j].goal_index];
+				while(currentNode.graph_number != robotsCopy[j].start_index){
+					treesPath << currentNode.loc.x << ", " << currentNode.loc.y << ", ";
+					currentNode = robotsTree[j][currentNode.backpointer];
+				}
+				treesPath << currentNode.loc.x << ", " << currentNode.loc.y << ", " << endl;
+
 			}
-			treesPath << currentNode.loc.x << ", " << currentNode.loc.y << ", " << endl;
 
+			treesPath.close();
 		}
-
-		treesPath.close();
 	}
 
-
-
+	// experimental
 
 	//
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
@@ -2884,6 +2930,307 @@ PRM_Benchmark map::GoalBiasRRT_Centralized(int n,double r,double p,double epsilo
 		return bm;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//  GoalBiasRRT_Decentralized()
+////////////////////////////////////////////////////////////////////////////////
+
+PRM_Benchmark map::GoalBiasRRT_Decentralized(int n,double r,double p,double epsilon, bool outputPath, bool outPutTree, int numOfRobs){
+
+	// benchmark initialization
+	PRM_Benchmark bm;
+
+	// take time
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+
+	// random
+	unsigned seedX = std::chrono::steady_clock::now().time_since_epoch().count();
+	// cout << seedX << endl;
+	srand (seedX);
+
+	// xMapMin, xMapMax, yMapMin, yMapMax
+	std::vector<std::vector<node>> robotsTreePaths;
+	robotsTreePaths.resize(numOfRobs);
+
+	std::vector<robot> robotsCopy = robots;
+
+	// cout << "Number of Robots: " << numOfRobs << endl;
+
+
+	double minDistanceTree = numOfRobs*sqrt((pow(xMapMax-xMapMin,2.0) +  pow(yMapMax-yMapMin,2.0)));
+
+	// initialize the start location for all robots in their trees
+	robotsCopy.resize(robots.size());
+
+	int totalBotsAtGoal =0;
+
+
+
+	for(int currentBot = 0; currentBot < numOfRobs; currentBot++){
+		// try to make n nodes..... //////////////////////////////////////////////////
+		std::vector<node> robotsTreeTemp;
+
+		node tempNode;
+		tempNode.graph_number = 0;
+		tempNode.loc = robotsCopy[currentBot].start;
+		tempNode.timeStamp = 0;
+		robotsCopy[currentBot].start_index = 0;
+		robotsTreeTemp.push_back(tempNode);
+		int numberOfNodes = 1;
+		robotsTreeTemp.resize(numberOfNodes);
+
+
+		for(int i = 0; i < n ; i++){
+
+			bool noCollision = true; // no collisions
+			int botsChecked = 0;	// number of bots checked
+
+			vertex configurationVectorTemp;
+
+			std::vector<node> minNodeVec;
+			minNodeVec.resize(numOfRobs);
+
+
+			// make random configuration ///////////////////////////////////////////////
+			double randomNum = (double) rand()/RAND_MAX;
+			if(randomNum <= p){
+				vertex temp;
+
+				temp.x = robotsCopy[currentBot].goal.x; //(xMapMin-xMapMax) + xMapMin;
+				temp.y = robotsCopy[currentBot].goal.y; //(yMapMin-yMapMax) + yMapMin;
+					// node with min distance to q_rand
+				configurationVectorTemp = temp;
+			}
+			else{
+				vertex temp;
+
+				temp.x = (double) rand()*(xMapMax-xMapMin)/RAND_MAX +xMapMin; //(xMapMin-xMapMax) + xMapMin;
+				temp.y = (double) rand()*(yMapMax-yMapMin)/RAND_MAX +yMapMin; //(yMapMin-yMapMax) + yMapMin;
+				configurationVectorTemp = temp;
+
+			}
+
+
+			// calculate min distance node
+			double minDis = sqrt((pow(xMapMax-xMapMin,2.0) +  pow(yMapMax-yMapMin,2.0)));
+			int minIndex;
+			double tempMinDist;
+
+			for(int q = 0; q < numberOfNodes; q++ ){
+
+				tempMinDist = dist(configurationVectorTemp, robotsTreeTemp[q].loc);
+					// cout << tempMinDist << endl;
+					// cout << "Robot " << robotsTreeTemp[q].loc.x << ", " << robotsTreeTemp[q].loc.y << endl;
+
+				if(tempMinDist < minDis){
+					minDis = tempMinDist;
+					minIndex = q;
+					// cout << "Min Distance = " << minDis << " at location " << minIndex << endl;
+				}
+			}
+
+			// cout << "Min Index = " << minIndex << endl;
+			// calculate the location of node r distance away for each robot
+			// see if node can be epsilon away
+
+			// finalize configuration
+			node minNode = robotsTreeTemp[minIndex];
+			double theta = atan2(configurationVectorTemp.y-minNode.loc.y,configurationVectorTemp.x-minNode.loc.x );
+			// position of new node
+			configurationVectorTemp.x = r*cos(theta) + minNode.loc.x;
+			configurationVectorTemp.y = r*sin(theta) + minNode.loc.y;
+
+			// make new candidate node
+			node tempCandidate;
+			tempCandidate.loc = configurationVectorTemp;
+			tempCandidate.backpointer = minIndex;
+			tempCandidate.timeStamp = robotsTreeTemp[minIndex].timeStamp+1;
+
+
+
+			// see if configurationVectorTemp results in collision with obs or bot
+
+			// Make a polygon from the circular robots path
+			polygon tempPoly;
+			// double theta = atan2(configurationVectorTemp.y-robotsTree[minIndex].loc.y,configurationVectorTemp.x-robotsTree[minIndex].loc.x );
+			double distanceBetween = dist(configurationVectorTemp, robotsTreeTemp[minIndex].loc);
+
+
+			vertex v1;
+			v1.x = robotsTreeTemp[minIndex].loc.x + (robotsCopy[currentBot].R*(-cos(theta) + sin(theta)));
+			v1.y = robotsTreeTemp[minIndex].loc.y + (robotsCopy[currentBot].R*(cos(theta) + sin(theta)));
+			tempPoly.vertices.push_back(v1);
+
+			vertex v2;
+			v2.x = robotsTreeTemp[minIndex].loc.x + ((distanceBetween+robotsCopy[currentBot].R)*cos(theta) + robotsCopy[currentBot].R*sin(theta));
+			v2.y = robotsTreeTemp[minIndex].loc.y + ((distanceBetween+robotsCopy[currentBot].R)*sin(theta) - robotsCopy[currentBot].R*cos(theta));
+			tempPoly.vertices.push_back(v2);
+
+			vertex v3;
+			v3.x = robotsTreeTemp[minIndex].loc.x + ((distanceBetween+robotsCopy[currentBot].R)*cos(theta) - robotsCopy[currentBot].R*sin(theta));
+			v3.y = robotsTreeTemp[minIndex].loc.y + ((distanceBetween+robotsCopy[currentBot].R)*sin(theta) + robotsCopy[currentBot].R*cos(theta));
+			tempPoly.vertices.push_back(v3);
+
+			vertex v4;
+			v4.x = robotsTreeTemp[minIndex].loc.x + (robotsCopy[currentBot].R*(-cos(theta) - sin(theta)));
+			v4.y = robotsTreeTemp[minIndex].loc.y + (robotsCopy[currentBot].R*(cos(theta) - sin(theta)));
+			tempPoly.vertices.push_back(v4);
+
+			// cout << "Angle Theta = " << 180*theta/PI << endl;
+			// cout << "Distance =  " << distanceBetween << endl;
+			// cout << "vertex Locations " << v1.x << ", " << v1.y << ", " << v2.x << ", " << v2.y << ", "<< v3.x << ", " << v3.y << ", " << v4.x << ", " << v4.y << endl;
+
+			if(polygonObstacleCollision(tempPoly)){
+				noCollision = false;
+				// cout << "Path Collision" << endl;
+			}
+
+
+			for(int j = 0; j<currentBot; j++){
+
+					if(j!=currentBot){
+						vertex loc1,loc2;
+						int numOfSteps = 10;
+						double Max_Robot_Robot_Dist = robots[j].R+robots[currentBot].R;
+
+
+					for(int r = 0; r <= numOfSteps; r++ ){
+
+						loc1.x = robotsTreePaths[j][tempCandidate.timeStamp].loc.x + r*(robotsTreePaths[j][tempCandidate.timeStamp].loc.x - robotsTreePaths[j][tempCandidate.timeStamp-1].loc.x)/numOfSteps;
+						loc1.y = robotsTreePaths[j][tempCandidate.timeStamp].loc.y + r*(robotsTreePaths[j][tempCandidate.timeStamp].loc.y - robotsTreePaths[j][tempCandidate.timeStamp-1].loc.y)/numOfSteps;
+
+						loc2.x = configurationVectorTemp.x + r*(configurationVectorTemp.x - robotsTreeTemp[minIndex].loc.x)/numOfSteps;
+						loc2.y = configurationVectorTemp.y + r*(configurationVectorTemp.y - robotsTreeTemp[minIndex].loc.y)/numOfSteps;
+
+
+						if(dist(loc1, loc2) <= Max_Robot_Robot_Dist){//robots[j].R+robots[q].R
+							// cout << "Distance Between Bots" << dist(loc1, loc2) << endl;
+							// cout << "Max Distance between bots " << Max_Robot_Robot_Dist << endl;
+							noCollision = false;
+							// cout << "Robot Collision" << endl;
+							}
+
+						}
+
+					}
+
+				}
+
+				if(noCollision){
+					tempCandidate.graph_number = numberOfNodes;
+
+					if(dist(tempCandidate.loc, robotsCopy[currentBot].goal) <= epsilon){
+						tempCandidate.loc = robotsCopy[currentBot].goal;
+						robotsCopy[currentBot].goal_index = numberOfNodes;
+						robotsCopy[currentBot].atGoal  = true;
+						totalBotsAtGoal++;
+						i = 2*n;
+					}
+
+					robotsTreeTemp.push_back(tempCandidate);
+					numberOfNodes++;
+					robotsTreeTemp.resize(numberOfNodes);
+
+				}
+
+
+
+
+		}
+
+		if(robotsCopy[currentBot].atGoal){
+			// make the path for the current robot in robotsTreePaths
+			// cout << "----------- Found a Path for robot " << currentBot << " -----------" << endl;
+			// cout << endl;
+			// cout << "             Reverse Path           " << endl;
+			node bing = robotsTreeTemp[robotsCopy[currentBot].goal_index];
+			while(bing.timeStamp != 0){
+				robotsTreePaths[currentBot].push_back(bing);
+
+				// cout << bing.timeStamp << " : " << bing.loc.x << ", " << bing.loc.y << endl;
+				bing = robotsTreeTemp[bing.backpointer];
+
+
+			}
+			// cout << bing.timeStamp << " : " << bing.loc.x << ", " << bing.loc.y << endl;
+			robotsTreePaths[currentBot].push_back(bing);
+
+			std::reverse(robotsTreePaths[currentBot].begin(),robotsTreePaths[currentBot].end());
+			robotsTreePaths[currentBot].resize(robotsTreePaths[currentBot].size());
+
+			// // debugging
+			// cout << endl;
+			// cout << "             Forward Path           " << endl;
+			// int it = 0;
+			// while(it != robotsTreePaths[currentBot].size()){
+			// 	cout << robotsTreePaths[currentBot][it].timeStamp << " : " << robotsTreePaths[currentBot][it].loc.x << ", " << robotsTreePaths[currentBot][it].loc.y << endl;
+			// 	it++;
+			// }
+
+		}
+		else{
+			currentBot = 2*numOfRobs;
+		}
+
+	}
+
+
+	// cout << "Number of Nodes: " << numberOfNodes << endl;
+	// cout << "Number of Robots at goal: " << atGoalCounter << endl;
+
+	// if(outPutTree){
+	// 	// cout << "Make Tree" << endl;
+	// 	ofstream trees("Trees.txt");
+	// 	for(int j = 0; j < numOfRobs; j++){
+	//
+	// 		for(int i = 1; i<numberOfNodes; i++){
+	// 			trees << robotsTree[j][i].loc.x << ", " << robotsTree[j][i].loc.y << ", ";
+	// 			trees << robotsTree[j][robotsTree[j][i].backpointer].loc.x << ", " << robotsTree[j][robotsTree[j][i].backpointer].loc.y << ", ";
+	// 		}
+	//
+	// 		trees << endl;
+	// 	}
+	//
+	// 	trees.close();
+	// }
+
+	if(totalBotsAtGoal == numOfRobs){
+		if(outputPath){
+			// cout << "Make Path" << endl;
+			ofstream treesPath("Trees_Path_Decentralized.txt");
+			for(int j = 0; j < numOfRobs; j++){
+				int it = 0;
+				while(it != robotsTreePaths[j].size()){
+				 	treesPath << robotsTreePaths[j][it].loc.x << ", " << robotsTreePaths[j][it].loc.y << ", " ;
+				 	it++;
+			 }
+			 treesPath << endl;
+			}
+
+			treesPath.close();
+		}
+	}
+	// }
+	//
+	// // experimental
+
+	//
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+		// cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << " [s]" << std::endl;
+		// bm.pathLength = treePathDist;
+
+		bm.compTime = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+		// bm.pathLength = 0.0;
+		// bm.validSolution = numberOfNodes;
+
+		// cout << "Benchmark Info" << endl;
+		// cout << "Size of Tree: " << bm.validSolution << endl;
+		// // cout << "Path Lenght: " << bm.pathLength << endl;
+		// cout << "Computation Time: " << bm.compTime << " [micro sec]" << endl;
+		//
+		return bm;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //  addRobots()

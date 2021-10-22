@@ -38,28 +38,32 @@ for i = 1:size(ospace,1)
    plot(pgon, 'FaceColor', [0.0,0.0,0.0], 'FaceAlpha', 1)
 end
 axis equal
-title('Centralized Multi-agent Planning');
+title('Decentralized Multi-agent Planning');
 xlim([0 16]); ylim([0 16]);
 xlabel('x axis'); ylabel('y-axis');
 grid minor
 
 
-  
+% 
 
-path = importdata('Trees_Path.txt');
+path = importdata('Trees_Path_Decentralized.txt');
 subpath = zeros(size(path));
+% 
+% fid = fopen('Trees_Path.txt');
+% line1 = fgetl(fid);
+% res=line1;
+% while ischar(line1)
+%     line1 = fgetl(fid);
+%     res =char(res,line1)
+% end
+% fclose(fid);
+% for k=1:size(res,1)
+%   A{k}=str2num(res(k,:))
+% end
 
-fid = fopen('Trees_Path.txt');
-line1 = fgetl(fid);
-res=line1;
-while ischar(line1)
-    line1 = fgetl(fid);
-    res =char(res,line1)
-end
-fclose(fid);
-for k=1:size(res,1)
-  A{k}=str2num(res(k,:))
-end
+k = size(path,1)+1;
+
+
 
 % plot starts and goals
 for i = 1:k-1   
@@ -75,7 +79,7 @@ end
 max = 0;
 index = 1;
 for i = 1:k-1
-   temp = length(A{i})/2;
+   temp = length(path(i,:))/2;
    if temp>max
        max = temp;
        index = i;
@@ -88,14 +92,18 @@ for i = 1:k-1
     iX = 2*(i-1) +1;
     iY = 2*i;
     
-    dataTempLONG = A{i};
-    for j = 1:length(A{i})/2
+    dataTempLONG = path(i,:);
+    for j = 1:length(path(i,:))/2
         jX = 2*(j-1) +1;
         jY = 2*j; 
-        dataTemp(j,1:2) = dataTempLONG(jX:jY);
+        if isnan(dataTempLONG(jX:jY))
+            dataTemp(j,1:2) = goal(i,:);
+        else
+            dataTemp(j,1:2) = dataTempLONG(jX:jY);
+        end
+        
     end
     
-    dataTemp = flip(dataTemp);
     dataTempLength = length(dataTemp);
     
     robotPath(1:dataTempLength,iX:iY) = dataTemp;
@@ -119,13 +127,13 @@ for i=1:k-1
     
 end
 
-saveas(gcf, 'Ex_1_b.jpg');
+saveas(gcf, 'Ex_2_b.jpg');
 
 
 % Record and make video of path
 video = 0; 
 if video ==1
-    videoName = 'multiAgentPath_Centralized.avi';
+    videoName = 'multiAgentPath_Decentralized.avi';
     v = VideoWriter(videoName);
     v.FrameRate = 10;
     open(v);
@@ -166,73 +174,37 @@ benchmarks = zeros(100,12);
 
 for i = 1:6
     
-   benchMark_fileName = ['Exercise_1_m_' num2str(i) '.txt'];
+   benchMark_fileName = ['Exercise_2_m_' num2str(i) '.txt'];
    
-   
-   iX = 2*(i-1) +1;
-   iY = 2*i; 
-   benchmarks(:, iX:iY) = importdata(benchMark_fileName);
+   benchmarks(:, i) = importdata(benchMark_fileName);
 end
 
 
 %% Exercise 1.c 
 figure
-boxplot(benchmarks(:,1:2:3))
-title('Tree Size')
-xlabel('Number of Agents'); ylabel('Number of Nodes');
-grid minor
-
-saveas(gcf, 'Ex_1_c_TreeSize.jpg');
-
-
-figure
-boxplot(benchmarks(:,2:2:4))
+boxplot(benchmarks(:,1:2))
 title('Computation Time')
 xlabel('Numer of Agents'); ylabel('Computation Time [\mus]');
 grid minor
 
-saveas(gcf, 'Ex_1_c_CompTime.jpg');
+saveas(gcf, 'Ex_2_c_CompTime.jpg');
 
 %% Exercise 1.d
 figure
-boxplot(benchmarks(:,5:2:11))
-title('Tree Size')
-xlabel('Number of Agents'); ylabel('Number of Nodes');
-xticklabels({'3', '4', '5', '6'})
-grid minor
-saveas(gcf, 'Ex_1_d_TreeSize.jpg');
-
-
-figure
-boxplot(benchmarks(:,6:2:12))
+boxplot(benchmarks(:,3:6))
 title('Computation Time')
 xlabel('Numer of Agents'); ylabel('Computation Time [\mus]');
 xticklabels({'3', '4', '5', '6'})
 grid minor
 
-saveas(gcf, 'Ex_1_d_CompTime.jpg');
+saveas(gcf, 'Ex_2_d_CompTime.jpg');
 
 
 %% Exercise 1.e
 figure
 hold on
 for i = 1:6
-   iX = 2*(i-1) +1;
-   plot(i, mean(benchmarks(:, iX)), 'o', 'MarkerSize', 7.5, 'MarkerFaceColor',...
-       color(1,:), 'MarkerEdgeColor', color(1,:)); 
-end
-title('Average Tree Sizes')
-xlabel('Number of Agents'); ylabel('Number of Nodes');
-xticks([1 2 3 4 5 6]); xlim([0 7])
-xticklabels({'1', '2', '3', '4', '5', '6'})
-grid minor
-saveas(gcf, 'Ex_1_e_TreeSize.jpg');
-
-figure
-hold on
-for i = 1:6
-   iX = 2*i;
-   plot(i, mean(benchmarks(:, iX)), 'o', 'MarkerSize', 7.5, 'MarkerFaceColor',...
+   plot(i, mean(benchmarks(:, i)), 'o', 'MarkerSize', 7.5, 'MarkerFaceColor',...
        color(1,:), 'MarkerEdgeColor', color(1,:));  
 end
 title('Average Computation Time')
@@ -240,7 +212,7 @@ xlabel('Number of Agents'); ylabel('Computation Time [\mus]');
 xticks([1 2 3 4 5 6]); xlim([0 7])
 xticklabels({'1', '2', '3', '4', '5', '6'})
 grid minor
-saveas(gcf, 'Ex_1_e_CompTime.jpg');
+saveas(gcf, 'Ex_2_e_CompTime.jpg');
 %% Supplemental Functions
 
 function h = circle2(x,y,r, color)
