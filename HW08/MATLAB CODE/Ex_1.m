@@ -161,86 +161,86 @@ end
 
 
 
-%% Benchmark
-benchmarks = zeros(100,12);
-
-for i = 1:6
-    
-   benchMark_fileName = ['Exercise_1_m_' num2str(i) '.txt'];
-   
-   
-   iX = 2*(i-1) +1;
-   iY = 2*i; 
-   benchmarks(:, iX:iY) = importdata(benchMark_fileName);
-end
-
-
-%% Exercise 1.c 
-figure
-boxplot(benchmarks(:,1:2:3))
-title('Tree Size')
-xlabel('Number of Agents'); ylabel('Number of Nodes');
-grid minor
-
-saveas(gcf, 'Ex_1_c_TreeSize.jpg');
-
-
-figure
-boxplot(benchmarks(:,2:2:4))
-title('Computation Time')
-xlabel('Numer of Agents'); ylabel('Computation Time [\mus]');
-grid minor
-
-saveas(gcf, 'Ex_1_c_CompTime.jpg');
-
-%% Exercise 1.d
-figure
-boxplot(benchmarks(:,5:2:11))
-title('Tree Size')
-xlabel('Number of Agents'); ylabel('Number of Nodes');
-xticklabels({'3', '4', '5', '6'})
-grid minor
-saveas(gcf, 'Ex_1_d_TreeSize.jpg');
-
-
-figure
-boxplot(benchmarks(:,6:2:12))
-title('Computation Time')
-xlabel('Numer of Agents'); ylabel('Computation Time [\mus]');
-xticklabels({'3', '4', '5', '6'})
-grid minor
-
-saveas(gcf, 'Ex_1_d_CompTime.jpg');
-
-
-%% Exercise 1.e
-figure
-hold on
-for i = 1:6
-   iX = 2*(i-1) +1;
-   plot(i, mean(benchmarks(:, iX)), 'o', 'MarkerSize', 7.5, 'MarkerFaceColor',...
-       color(1,:), 'MarkerEdgeColor', color(1,:)); 
-end
-title('Average Tree Sizes')
-xlabel('Number of Agents'); ylabel('Number of Nodes');
-xticks([1 2 3 4 5 6]); xlim([0 7])
-xticklabels({'1', '2', '3', '4', '5', '6'})
-grid minor
-saveas(gcf, 'Ex_1_e_TreeSize.jpg');
-
-figure
-hold on
-for i = 1:6
-   iX = 2*i;
-   plot(i, mean(benchmarks(:, iX)), 'o', 'MarkerSize', 7.5, 'MarkerFaceColor',...
-       color(1,:), 'MarkerEdgeColor', color(1,:));  
-end
-title('Average Computation Time')
-xlabel('Number of Agents'); ylabel('Computation Time [\mus]');
-xticks([1 2 3 4 5 6]); xlim([0 7])
-xticklabels({'1', '2', '3', '4', '5', '6'})
-grid minor
-saveas(gcf, 'Ex_1_e_CompTime.jpg');
+% %% Benchmark
+% benchmarks = zeros(100,12);
+% 
+% for i = 1:6
+%     
+%    benchMark_fileName = ['Exercise_1_m_' num2str(i) '.txt'];
+%    
+%    
+%    iX = 2*(i-1) +1;
+%    iY = 2*i; 
+%    benchmarks(:, iX:iY) = importdata(benchMark_fileName);
+% end
+% 
+% 
+% %% Exercise 1.c 
+% figure
+% boxplot(benchmarks(:,1:2:3))
+% title('Tree Size')
+% xlabel('Number of Agents'); ylabel('Number of Nodes');
+% grid minor
+% 
+% saveas(gcf, 'Ex_1_c_TreeSize.jpg');
+% 
+% 
+% figure
+% boxplot(benchmarks(:,2:2:4))
+% title('Computation Time')
+% xlabel('Numer of Agents'); ylabel('Computation Time [\mus]');
+% grid minor
+% 
+% saveas(gcf, 'Ex_1_c_CompTime.jpg');
+% 
+% %% Exercise 1.d
+% figure
+% boxplot(benchmarks(:,5:2:11))
+% title('Tree Size')
+% xlabel('Number of Agents'); ylabel('Number of Nodes');
+% xticklabels({'3', '4', '5', '6'})
+% grid minor
+% saveas(gcf, 'Ex_1_d_TreeSize.jpg');
+% 
+% 
+% figure
+% boxplot(benchmarks(:,6:2:12))
+% title('Computation Time')
+% xlabel('Numer of Agents'); ylabel('Computation Time [\mus]');
+% xticklabels({'3', '4', '5', '6'})
+% grid minor
+% 
+% saveas(gcf, 'Ex_1_d_CompTime.jpg');
+% 
+% 
+% %% Exercise 1.e
+% figure
+% hold on
+% for i = 1:6
+%    iX = 2*(i-1) +1;
+%    plot(i, mean(benchmarks(:, iX)), 'o', 'MarkerSize', 7.5, 'MarkerFaceColor',...
+%        color(1,:), 'MarkerEdgeColor', color(1,:)); 
+% end
+% title('Average Tree Sizes')
+% xlabel('Number of Agents'); ylabel('Number of Nodes');
+% xticks([1 2 3 4 5 6]); xlim([0 7])
+% xticklabels({'1', '2', '3', '4', '5', '6'})
+% grid minor
+% saveas(gcf, 'Ex_1_e_TreeSize.jpg');
+% 
+% figure
+% hold on
+% for i = 1:6
+%    iX = 2*i;
+%    plot(i, mean(benchmarks(:, iX)), 'o', 'MarkerSize', 7.5, 'MarkerFaceColor',...
+%        color(1,:), 'MarkerEdgeColor', color(1,:));  
+% end
+% title('Average Computation Time')
+% xlabel('Number of Agents'); ylabel('Computation Time [\mus]');
+% xticks([1 2 3 4 5 6]); xlim([0 7])
+% xticklabels({'1', '2', '3', '4', '5', '6'})
+% grid minor
+% saveas(gcf, 'Ex_1_e_CompTime.jpg');
 %% Supplemental Functions
 
 function h = circle2(x,y,r, color)

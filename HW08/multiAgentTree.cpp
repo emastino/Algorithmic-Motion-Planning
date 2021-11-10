@@ -93,21 +93,22 @@ int main()
 
 
   // Make Map
-	std::tuple<double, double> xLim = std::make_tuple(0,16);
-	std::tuple<double, double> yLim = std::make_tuple(0,16);
+	std::tuple<double, double> xLim = std::make_tuple(-1,17);
+	std::tuple<double, double> yLim = std::make_tuple(-1,17);
 	// map start and goal. These don't matter now
 	std::tuple<double, double> start = std::make_tuple(0.0,0.0);
 	std::tuple<double, double> goal = std::make_tuple(0.0,0.0);
 
   // make obstacles
-	std::vector<polygon> obstacles = makeObstacles("obstacles.txt");
+	// std::vector<polygon> obstacles = makeObstacles("obstacles.txt");
 
-
+  // no obstacles
+  std::vector<polygon> obstacles;
 
   // make robots
-  int activeBots = 6;
-  vertex startArray[6] = { {2,2}, {2,14}, {8,14}, {2,8}, {11,2}, {11,14} };
-  vertex goalArray[6] = { {14,14}, {14,2}, {8,2}, {14,8}, {5,14}, {5,2}};
+  int activeBots = 16;
+  vertex startArray[16] = { {-1,2}, {-1,17}, {2,-1}, {5,-1}, {15,17}, {17,6} ,{-1,5}, {8,-1}, {10,-1}, {-1,5}, {3,17}, {5,17}, {12,-1}, {-1,10}, {9,17}, {17,4}};
+  vertex goalArray[16] = { {6,9.5}, {6,8.75}, {6,7.25}, {6,6.5}, {6.75,8}, {6,8},{7.5,8}, {8.25,8},{8.25,9.5}, {8.25,8.75}, {8.25,7.25}, {8.25,6.5}, {9.75,9.5}, {9.75,8}, {9.75,7.25}, {9.75,6.5}};
 
   std::vector<robot> robotVector;
 
@@ -117,7 +118,7 @@ int main()
     tempRob.robotNumber = i;
     tempRob.start = startArray[i];
     tempRob.goal = goalArray[i];
-    tempRob.R = 0.5;
+    tempRob.R = 0.25;
 
     // cout << startArray[i].x << ", " << startArray[i].y << endl;
 
@@ -130,34 +131,34 @@ int main()
 
 
 	// make a map object
-	map mapa(xLim, yLim, start, goal, obstacles);
+	// map mapa(xLim, yLim, start, goal, obstacles);
 
 
 
 
-  mapa.addRobots(robotVector);
+  // mapa.addRobots(robotVector);
 
-  PRM_Benchmark pm = mapa.GoalBiasRRT_Centralized(7500,0.5,0.05,0.25,true,false, 2); //(int n,double r,double p,double epsilon, bool outputPath, bool outPutTree, int numOfRobs)
-  int from = 1;
-  int to = 6;
-	for(int j = from; j <= to ; j++){
-		// cout << "n = " << numNode[j] << endl;
-		// cout << "r = " << rad[j] << endl;
-    // file names
-    sprintf(name_buffer,"%s%d%s",fileName_1,j,fileType);
-  	ofstream benchmark(name_buffer); // valid solutions
-
-
-		for (int i = 0 ; i <100 ; i++){
-      mapa.addRobots(robotVector);
-			pm = mapa.GoalBiasRRT_Centralized(7500, 0.5, 0.05, 0.25, false, false, j);
-			benchmark << pm.validSolution <<  ", " <<  pm.compTime  << endl ;
-      // Sleep(1000);
-		}
-    cout << "Finished Benchmarking For " << j << " Robot(s)" << endl;
-
-    benchmark.close();
-	}
+  // PRM_Benchmark pm = mapa.GoalBiasRRT_Centralized(7500,0.5,0.05,0.25,true,false, 6); //(int n,double r,double p,double epsilon, bool outputPath, bool outPutTree, int numOfRobs)
+  // int from = 1;
+  // int to = 6;
+	// for(int j = from; j <= to ; j++){
+	// 	// cout << "n = " << numNode[j] << endl;
+	// 	// cout << "r = " << rad[j] << endl;
+  //   // file names
+  //   sprintf(name_buffer,"%s%d%s",fileName_1,j,fileType);
+  // 	ofstream benchmark(name_buffer); // valid solutions
+  //
+  //
+	// 	for (int i = 0 ; i <100 ; i++){
+  //     mapa.addRobots(robotVector);
+	// 		pm = mapa.GoalBiasRRT_Centralized(7500, 0.5, 0.05, 0.25, false, false, j);
+	// 		benchmark << pm.validSolution <<  ", " <<  pm.compTime  << endl ;
+  //     // Sleep(1000);
+	// 	}
+  //   cout << "Finished Benchmarking For " << j << " Robot(s)" << endl;
+  //
+  //   benchmark.close();
+	// }
 
   //////////////////////////////////////////////////////////////////////////////
 	// Exercise 2
@@ -169,27 +170,27 @@ int main()
 	map mapa2(xLim, yLim, start, goal, obstacles);
   mapa2.addRobots(robotVector);
 
-  PRM_Benchmark pm2 = mapa2.GoalBiasRRT_Decentralized(7500,0.5,0.05,0.25,true,false, 2); // path file for two robots
+  PRM_Benchmark pm2 = mapa2.GoalBiasRRT_Decentralized(10000000,0.3,0.05,0.25,true,false, 16); // path file for two robots
 
-  // PRM_Benchmark pm;
-	for(int j = from; j <= to ; j++){
-		// cout << "n = " << numNode[j] << endl;
-		// cout << "r = " << rad[j] << endl;
-    // file names
-    sprintf(name_buffer,"%s%d%s",fileName_2,j,fileType);
-  	ofstream benchmark(name_buffer); // valid solutions
-
-
-		for (int i = 0 ; i <100 ; i++){
-      // mapa2.addRobots(robotVector);
-			pm2 = mapa2.GoalBiasRRT_Decentralized(7500, 0.5, 0.05, 0.25, false, false, j);
-			benchmark <<  pm2.compTime << ", "  << endl ;
-      // Sleep(1000);
-		}
-    cout << "Finished Benchmarking For " << j << " Robot(s)" << endl;
-
-    benchmark.close();
-	}
+  // // PRM_Benchmark pm;
+	// for(int j = from; j <= to ; j++){
+	// 	// cout << "n = " << numNode[j] << endl;
+	// 	// cout << "r = " << rad[j] << endl;
+  //   // file names
+  //   sprintf(name_buffer,"%s%d%s",fileName_2,j,fileType);
+  // 	ofstream benchmark(name_buffer); // valid solutions
+  //
+  //
+	// 	for (int i = 0 ; i <100 ; i++){
+  //     // mapa2.addRobots(robotVector);
+	// 		pm2 = mapa2.GoalBiasRRT_Decentralized(7500, 0.5, 0.05, 0.25, false, false, j);
+	// 		benchmark <<  pm2.compTime << ", "  << endl ;
+  //     // Sleep(1000);
+	// 	}
+  //   cout << "Finished Benchmarking For " << j << " Robot(s)" << endl;
+  //
+  //   benchmark.close();
+	// }
 
 
 

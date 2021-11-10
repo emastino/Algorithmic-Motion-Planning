@@ -46,22 +46,22 @@ grid minor
 
 % 
 
-path = importdata('Trees_Path_Decentralized.txt');
+% path = importdata('Trees_Path_Decentralized.txt');
 subpath = zeros(size(path));
 % 
-% fid = fopen('Trees_Path.txt');
-% line1 = fgetl(fid);
-% res=line1;
-% while ischar(line1)
-%     line1 = fgetl(fid);
-%     res =char(res,line1)
-% end
-% fclose(fid);
-% for k=1:size(res,1)
-%   A{k}=str2num(res(k,:))
-% end
+fid = fopen('Trees_Path_Decentralized.txt');
+line1 = fgetl(fid);
+res=line1;
+while ischar(line1)
+    line1 = fgetl(fid);
+    res =char(res,line1)
+end
+fclose(fid);
+for k=1:size(res,1)
+  A{k}=str2num(res(k,:))
+end
 
-k = size(path,1)+1;
+% k = size(path,1)+1;
 
 
 
@@ -79,7 +79,7 @@ end
 max = 0;
 index = 1;
 for i = 1:k-1
-   temp = length(path(i,:))/2;
+   temp = length(A{i})/2;
    if temp>max
        max = temp;
        index = i;
@@ -92,18 +92,14 @@ for i = 1:k-1
     iX = 2*(i-1) +1;
     iY = 2*i;
     
-    dataTempLONG = path(i,:);
-    for j = 1:length(path(i,:))/2
+    dataTempLONG = A{i};
+    for j = 1:length(A{i})/2
         jX = 2*(j-1) +1;
         jY = 2*j; 
-        if isnan(dataTempLONG(jX:jY))
-            dataTemp(j,1:2) = goal(i,:);
-        else
-            dataTemp(j,1:2) = dataTempLONG(jX:jY);
-        end
-        
+        dataTemp(j,1:2) = dataTempLONG(jX:jY);
     end
     
+%     dataTemp = flip(dataTemp);
     dataTempLength = length(dataTemp);
     
     robotPath(1:dataTempLength,iX:iY) = dataTemp;
@@ -169,50 +165,50 @@ end
 
 
 
-%% Benchmark
-benchmarks = zeros(100,12);
-
-for i = 1:6
-    
-   benchMark_fileName = ['Exercise_2_m_' num2str(i) '.txt'];
-   
-   benchmarks(:, i) = importdata(benchMark_fileName);
-end
-
-
-%% Exercise 1.c 
-figure
-boxplot(benchmarks(:,1:2))
-title('Computation Time')
-xlabel('Numer of Agents'); ylabel('Computation Time [\mus]');
-grid minor
-
-saveas(gcf, 'Ex_2_c_CompTime.jpg');
-
-%% Exercise 1.d
-figure
-boxplot(benchmarks(:,3:6))
-title('Computation Time')
-xlabel('Numer of Agents'); ylabel('Computation Time [\mus]');
-xticklabels({'3', '4', '5', '6'})
-grid minor
-
-saveas(gcf, 'Ex_2_d_CompTime.jpg');
-
-
-%% Exercise 1.e
-figure
-hold on
-for i = 1:6
-   plot(i, mean(benchmarks(:, i)), 'o', 'MarkerSize', 7.5, 'MarkerFaceColor',...
-       color(1,:), 'MarkerEdgeColor', color(1,:));  
-end
-title('Average Computation Time')
-xlabel('Number of Agents'); ylabel('Computation Time [\mus]');
-xticks([1 2 3 4 5 6]); xlim([0 7])
-xticklabels({'1', '2', '3', '4', '5', '6'})
-grid minor
-saveas(gcf, 'Ex_2_e_CompTime.jpg');
+% %% Benchmark
+% benchmarks = zeros(100,12);
+% 
+% for i = 1:6
+%     
+%    benchMark_fileName = ['Exercise_2_m_' num2str(i) '.txt'];
+%    
+%    benchmarks(:, i) = importdata(benchMark_fileName);
+% end
+% 
+% 
+% %% Exercise 1.c 
+% figure
+% boxplot(benchmarks(:,1:2))
+% title('Computation Time')
+% xlabel('Numer of Agents'); ylabel('Computation Time [\mus]');
+% grid minor
+% 
+% saveas(gcf, 'Ex_2_c_CompTime.jpg');
+% 
+% %% Exercise 1.d
+% figure
+% boxplot(benchmarks(:,3:6))
+% title('Computation Time')
+% xlabel('Numer of Agents'); ylabel('Computation Time [\mus]');
+% xticklabels({'3', '4', '5', '6'})
+% grid minor
+% 
+% saveas(gcf, 'Ex_2_d_CompTime.jpg');
+% 
+% 
+% %% Exercise 1.e
+% figure
+% hold on
+% for i = 1:6
+%    plot(i, mean(benchmarks(:, i)), 'o', 'MarkerSize', 7.5, 'MarkerFaceColor',...
+%        color(1,:), 'MarkerEdgeColor', color(1,:));  
+% end
+% title('Average Computation Time')
+% xlabel('Number of Agents'); ylabel('Computation Time [\mus]');
+% xticks([1 2 3 4 5 6]); xlim([0 7])
+% xticklabels({'1', '2', '3', '4', '5', '6'})
+% grid minor
+% saveas(gcf, 'Ex_2_e_CompTime.jpg');
 %% Supplemental Functions
 
 function h = circle2(x,y,r, color)

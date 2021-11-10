@@ -2979,7 +2979,7 @@ PRM_Benchmark map::GoalBiasRRT_Decentralized(int n,double r,double p,double epsi
 		int numberOfNodes = 1;
 		robotsTreeTemp.resize(numberOfNodes);
 
-
+		// while(!robotsCopy[currentBot].atGoal){
 		for(int i = 0; i < n ; i++){
 
 			bool noCollision = true; // no collisions
@@ -3116,6 +3116,16 @@ PRM_Benchmark map::GoalBiasRRT_Decentralized(int n,double r,double p,double epsi
 
 				}
 
+				for(int j = 0; j < numOfRobs; j++){
+					if(j !=currentBot){
+						if(dist(configurationVectorTemp, robotsCopy[j].goal) <= robotsCopy[j].R+robotsCopy[currentBot].R){
+							noCollision = false;
+							// cout << "Collision at goal" << endl;
+						}
+					}
+				}
+
+
 				if(noCollision){
 					tempCandidate.graph_number = numberOfNodes;
 
@@ -3125,6 +3135,7 @@ PRM_Benchmark map::GoalBiasRRT_Decentralized(int n,double r,double p,double epsi
 						robotsCopy[currentBot].atGoal  = true;
 						totalBotsAtGoal++;
 						i = 2*n;
+						// break;
 					}
 
 					robotsTreeTemp.push_back(tempCandidate);
@@ -3137,6 +3148,7 @@ PRM_Benchmark map::GoalBiasRRT_Decentralized(int n,double r,double p,double epsi
 
 
 		}
+
 
 		if(robotsCopy[currentBot].atGoal){
 			// make the path for the current robot in robotsTreePaths
@@ -3170,8 +3182,9 @@ PRM_Benchmark map::GoalBiasRRT_Decentralized(int n,double r,double p,double epsi
 		}
 		else{
 			currentBot = 2*numOfRobs;
-		}
 
+		}
+		cout << "Current Bot " << currentBot << endl;
 	}
 
 
