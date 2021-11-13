@@ -11,8 +11,9 @@ color = [0.125, 0.325, 0.875;
        
 % Obstacles
 ospace= importdata("obstacles.txt");
+% ospace= importdata("obstacles_fun.txt");
 
-figure
+figure('units','normalized','outerposition',[0 0 1 1])
 
 hold on
 for i = 1:size(ospace,1)
@@ -41,7 +42,7 @@ plot(pgon_start, 'FaceColor', [0.8,0.8,0.1], 'FaceAlpha', 0.3)
 % Record and make video of path
 video = 1; 
 if video ==1
-    videoName = 'tractorTrailer.avi';
+    videoName = 'tractorTrailer_x.avi';
     v = VideoWriter(videoName);
     v.FrameRate = 30;
 
@@ -70,25 +71,28 @@ carPaths  = importdata("cartFile.txt");
 carPaths = flip(carPaths);
 numberOfSteps = size(carPaths,1)/4;
 
-speed = 5;
-for i = 1:speed:numberOfSteps-4
+speed = 2;
+for i = 1:speed:numberOfSteps
     
     indexFrom = 1 + 4*(i-1);
     indexTo = 4*i;
     
-    if i > 1
-        delete(p)
-    end
+%     if i > 1
+%         delete(p)
+%     end
     
    vertices = carPaths(indexFrom:indexTo,:);
    
    for j = 1:4
-       pgon = polyshape(vertices(j,1:2:end),vertices(j,2:2:end));
-       if(j ==4)
-            p(j) = plot(pgon, 'FaceColor', [1.0,0.5,0.0], 'FaceAlpha', 1);
-       else
-            p(j) = plot(pgon, 'FaceColor', [0.0,1.0,0.8], 'FaceAlpha', 1);
-       end
+       pgon = polyshape(vertices(5-j,1:2:end),vertices(5-j,2:2:end));
+%        if(j ==4)
+%             p(j) = plot(pgon, 'FaceColor', [1.0,0.5,0.0], 'FaceAlpha', 1);
+%        else
+%             p(j) = plot(pgon, 'FaceColor', [0.0,1.0,0.8], 'FaceAlpha', 1);
+%        end
+
+        p(j) = plot(pgon, 'FaceColor', color(5-j,:), 'FaceAlpha', 1);
+
    end
    if video ==1
         frame = getframe(gcf);

@@ -20,7 +20,7 @@
 // dense is part of the Eigen matrix library, when using it, make sure to Include
 // the path to it in the compile command:
 //
-// g++ -I "D:\Users\emast\Personal\Personal Cpp" multiAgentTree.cpp -o mat
+// g++ -I "D:\Users\emast\Personal\Personal Cpp" miniProj.cpp -o MP
 //
 #include "Eigen/Dense" //using Dense inside Eigen
 
@@ -144,7 +144,7 @@ int main()
 	cout << "Goal Region: \n" << goalRegion << endl;
 
 
-	mapa.GoalBiasRRT_Trailer(20000, 0.05, startConfig, goalRegion, stateBounds, true);
+	mapa.GoalBiasRRT_Trailer(25000, 0.05, startConfig, goalRegion, stateBounds, true);
 
 	// //test collision
 	//
