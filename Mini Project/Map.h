@@ -26,7 +26,7 @@ using namespace std;
 
 // constants
 #define PI 3.14159265
-#define INTERVAL 50
+#define INTERVAL 10
 
 // vertex structure
 struct vertex{
@@ -3400,10 +3400,10 @@ PRM_Benchmark map::GoalBiasRRT_Trailer(int n, double p, const VectorXd& startCon
 		// cout << "Sampling Random Control Input and Outputting Generated Path" << endl;
 		double u1 = (double) rand()*(xNear.g/6.0-(-1.0/6.0))/RAND_MAX + (-1.0/6.0);
 		double u2 = (double) rand()*(PI/3)/RAND_MAX + (-PI/6.0);
-
+		double t = 5; //(double) rand()*(5/RAND_MAX);
 		// cout << " U 2 " << u2 << endl;
 		g = xNear.g;
-		path = generatePath( xNear.state, u1, u2, &g, 5);
+		path = generatePath( xNear.state, u1, u2, &g, t);
 		// cout << path << endl;
 
 	 	// check if path is valid //////////////////////////////////////////////////
@@ -3557,7 +3557,7 @@ PRM_Benchmark map::GoalBiasRRT_Trailer(int n, double p, const VectorXd& startCon
 VectorXd tractorTrailer_ODE(const VectorXd& currentState, int *g, double u1, double u2){
 
 	// tractor dimensions
-	double L = 2;
+	double L = 1.8;
 	double l = 2.5;
 	double W = 1;
 
